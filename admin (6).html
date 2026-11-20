@@ -1,0 +1,1802 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111111">
+<title>Plataforma Quick Ruteo · Cueros Vélez</title>
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --amarillo:#FFD200; --amarillo-osc:#E6BD00; --negro:#111111; --negro-2:#1E1E1E; --gris:#6B6B6B;
+  --gris-cl:#F2F2F0; --borde:#E2E2DE; --blanco:#FFFFFF;
+  --rojo:#D93025; --verde:#1E8E3E; --naranja:#F29900; --azul:#1A73E8;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--gris-cl);color:var(--negro);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.oculto{display:none!important}
+.rayo{width:34px;height:34px;border-radius:9px;background:var(--amarillo);display:grid;place-items:center;flex:none}
+
+/* Login */
+#login{min-height:100%;display:grid;place-items:center;background:var(--negro);padding:24px}
+.login-caja{width:100%;max-width:380px;color:#fff}
+.login-caja .marca{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.login-caja .marca b{font-size:26px;letter-spacing:.4px} .login-caja .marca b span{color:var(--amarillo)}
+.login-caja p{color:#bdbdbd;margin:0 0 26px}
+.login-caja label{display:block;font-size:13px;color:#bdbdbd;margin-bottom:6px}
+.login-caja input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid #333;background:var(--negro-2);color:#fff;font-size:17px;outline:none;margin-bottom:14px}
+.login-caja input:focus{border-color:var(--amarillo)}
+.btn-pri{padding:11px 16px;border-radius:10px;background:var(--amarillo);color:var(--negro);font-weight:800}
+.btn-pri:hover{background:var(--amarillo-osc)} .btn-pri:disabled{opacity:.5;cursor:default}
+.btn-neg{padding:10px 14px;border-radius:10px;background:var(--negro);color:var(--amarillo);font-weight:800}
+.btn-sec{padding:10px 14px;border-radius:10px;background:var(--gris-cl);font-weight:700;border:1px solid var(--borde)}
+.btn-rojo{padding:10px 14px;border-radius:10px;background:#FDE7E7;color:var(--rojo);font-weight:800}
+.login-caja .btn-pri{width:100%;padding:14px;font-size:16px}
+#loginError{color:#ff8a80;min-height:22px;margin-top:10px}
+
+/* App */
+#app{display:flex;flex-direction:column;height:100%}
+header{background:var(--negro);color:#fff;display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap}
+header .tit{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+header .tit b{font-size:17px;white-space:nowrap} header .tit b span{color:var(--amarillo)}
+header .tit small{color:#bdbdbd;display:block;font-size:12px}
+.ctl{display:flex;align-items:center;gap:6px}
+.ctl input[type=date]{background:var(--negro-2);border:1px solid #333;border-radius:9px;color:#fff;padding:7px 9px;color-scheme:dark}
+.ctl .chipd{padding:7px 11px;border-radius:9px;background:var(--negro-2);color:#ddd;font-weight:700;font-size:13px;white-space:nowrap}
+.ctl .chipd.act{background:var(--amarillo);color:var(--negro)}
+.usuario{display:flex;align-items:center;gap:8px;font-size:13px;color:#ddd}
+.usuario .perf{padding:3px 8px;border-radius:99px;background:#2a2a2a;font-weight:800;font-size:11px;letter-spacing:.3px;text-transform:uppercase}
+.usuario .perf.op{background:var(--amarillo);color:var(--negro)}
+.usuario button{color:#bdbdbd;text-decoration:underline}
+#demoBanner{background:var(--amarillo);color:var(--negro);text-align:center;font-size:12px;font-weight:800;padding:3px}
+.cuerpo{flex:1;display:flex;min-height:0}
+aside{width:440px;max-width:100%;background:#fff;display:flex;flex-direction:column;border-right:1px solid var(--borde);min-height:0}
+.tabs{display:flex;border-bottom:1px solid var(--borde);background:#fff;flex:none}
+.tabs button{flex:1;padding:12px 4px;font-weight:700;color:var(--gris);border-bottom:3px solid transparent;white-space:nowrap}
+.tabs button.act{color:var(--negro);border-color:var(--amarillo)}
+.panel{flex:1;overflow:auto;padding:14px}
+#mapaBox{flex:1;position:relative;min-width:0}
+#mapa{position:absolute;inset:0;background:#e5e3df}
+.capas{position:absolute;top:10px;left:50px;z-index:500;background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.15);padding:6px 8px;display:flex;gap:10px;font-size:12.5px;flex-wrap:wrap}
+.capas label{display:flex;gap:4px;align-items:center;cursor:pointer;white-space:nowrap}
+.aviso-mapa{position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:600;background:var(--negro);color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.3);display:flex;gap:10px;align-items:center}
+.aviso-mapa button{background:var(--amarillo);color:var(--negro);font-weight:800;padding:6px 10px;border-radius:8px}
+.aviso-mapa button.sec{background:#333;color:#fff}
+#mapaBox.lapiz #mapa{cursor:crosshair;touch-action:none}
+#mapaBox.ubicando #mapa{cursor:crosshair}
+.leyenda-t{position:absolute;left:10px;bottom:24px;z-index:500;background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.15);padding:8px 10px;font-size:12px;max-height:40%;overflow:auto;max-width:260px}
+.leyenda-t b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--gris);margin-bottom:4px}
+.leyenda-t div{display:flex;gap:6px;align-items:center;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leyenda-t i{width:12px;height:12px;border-radius:50%;flex:none;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.capas select{font-size:12.5px;padding:2px 4px;border-radius:6px;border:1px solid var(--borde);background:#fff}
+.lapiz-lista{max-height:46vh;overflow:auto;border:1px solid var(--borde);border-radius:10px;margin:8px 0 10px;background:#fff}
+.lapiz-item{display:flex;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--borde);font-size:13px}
+.lapiz-item:last-child{border-bottom:0}
+.lapiz-item .c{flex:1;min-width:0} .lapiz-item .c small{display:block;color:var(--gris);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lapiz-item button{color:var(--rojo);font-weight:800;padding:2px 6px}
+.mk-t{min-width:22px;width:auto;padding:0 4px}
+
+/* Bloques del panel */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.kpi{background:var(--gris-cl);border-radius:10px;padding:8px 10px;border-top:3px solid var(--amarillo)}
+.kpi b{display:block;font-size:20px} .kpi small{color:var(--gris);font-size:11.5px;line-height:1.2;display:block}
+.acciones-ruteo{display:flex;gap:8px;margin-bottom:12px}
+.acciones-ruteo button{flex:1}
+.nota{font-size:12.5px;color:var(--gris);margin:-4px 0 12px}
+.sec-tit{font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--gris);margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.sec-tit .lin{flex:1;height:1px;background:var(--borde)}
+.avisos{border-radius:10px;background:#FFF4E5;padding:8px 10px;font-size:13px;color:#7a4b00;margin-bottom:10px}
+.avisos details summary{cursor:pointer;font-weight:700}
+.avisos ul{margin:6px 0 0;padding-left:18px} .avisos li{margin-bottom:3px}
+.avisos a{color:#7a4b00;font-weight:700;cursor:pointer}
+.alerta-roja{background:#FDE7E7;color:#8c1d16}
+.mens{border:1px solid var(--borde);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.mens.sel{border-color:var(--negro);box-shadow:0 0 0 2px var(--amarillo)}
+.mens-cab{display:flex;gap:10px;align-items:center;padding:10px 12px;cursor:pointer}
+.dot{width:14px;height:14px;border-radius:50%;flex:none;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
+.mens-cab .nom{flex:1;min-width:0}
+.mens-cab .nom b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mens-cab .nom small{color:var(--gris)}
+.barra{height:6px;border-radius:9px;background:var(--gris-cl);margin-top:5px;overflow:hidden}
+.barra i{display:block;height:100%;background:var(--negro);border-radius:9px}
+.barra i.alta{background:var(--rojo)}
+.carga{text-align:right;font-size:12px;color:var(--gris);white-space:nowrap}
+.carga b{display:block;color:var(--negro);font-size:15px}
+.paradas{border-top:1px solid var(--borde);background:#FAFAF8;padding:6px 12px 8px}
+.parada{display:flex;gap:8px;align-items:flex-start;padding:5px 0;font-size:13px;border-bottom:1px dashed var(--borde);cursor:pointer}
+.parada:last-child{border-bottom:0}
+.parada .n{width:22px;height:22px;border-radius:50%;background:var(--negro);color:var(--amarillo);display:grid;place-items:center;font-size:11px;font-weight:800;flex:none}
+.parada .h{width:44px;color:var(--gris);font-variant-numeric:tabular-nums;flex:none;padding-top:2px}
+.parada .t{flex:1;min-width:0}
+.ic{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;font-size:11px;font-weight:800;margin-right:4px;vertical-align:-3px}
+.ic.R{background:var(--amarillo)} .ic.E{background:var(--negro);color:var(--amarillo)} .ic.T,.ic.B{background:var(--azul);color:#fff}
+.etq{display:inline-block;font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;background:var(--gris-cl);white-space:nowrap}
+.etq.tq{background:var(--azul);color:#fff} .etq.borr{background:#FFF6CC;color:#6B5600} .etq.man{background:#EDE7F6;color:#4527a0}
+.etq.ruta{background:#111;color:#FFD100;letter-spacing:.3px}
+.etq.e-Pendiente{background:var(--gris-cl);color:#444} .etq.e-Aceptado{background:#FFF6CC;color:#6B5600} .etq.e-Recogido{background:var(--amarillo)}
+.etq.e-Transferido,.etq.e-Recibido{background:#E3F2FD;color:#0b3a8c} .etq.e-Entregado{background:#E6F4EA;color:var(--verde)}
+.etq.e-Novedad,.etq.e-Cancelado{background:#FDE7E7;color:var(--rojo)} .etq.riesgo{background:var(--rojo);color:#fff}
+.vacio{text-align:center;color:var(--gris);padding:28px 10px}
+.filtros{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{padding:6px 11px;border-radius:99px;background:#fff;border:1px solid var(--borde);font-size:13px;font-weight:600}
+.chip.act{background:var(--negro);color:#fff;border-color:var(--negro)}
+.buscar{display:flex;gap:6px;margin-bottom:10px}
+.buscar input,.buscar select{flex:1;min-width:0;padding:9px 10px;border-radius:9px;border:1px solid var(--borde);background:#fff}
+.ped{display:flex;gap:10px;padding:9px 6px;border-bottom:1px solid var(--borde);cursor:pointer;align-items:flex-start}
+.ped:hover{background:#FAFAF8}
+.sem{width:10px;height:10px;border-radius:50%;margin-top:5px;flex:none}
+.ped .c{flex:1;min-width:0}
+.ped .c b{font-size:14px} .ped .c small{display:block;color:var(--gris);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ped .d{text-align:right;font-size:12px;color:var(--gris);white-space:nowrap}
+table.t{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:6px}
+table.t th{text-align:left;background:var(--negro);color:var(--amarillo);font-size:11px;padding:6px 8px;font-weight:800;letter-spacing:.3px}
+table.t td{padding:6px 8px;border-bottom:1px solid var(--borde)} table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+table.t th.n{text-align:right}
+.zona{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--borde)}
+.zona .nom{flex:1;min-width:0} .zona .nom small{display:block;color:var(--gris)}
+.zona button{font-size:12.5px;font-weight:700;padding:5px 8px;border-radius:7px;background:var(--gris-cl)}
+.zona button.rojo{color:var(--rojo)}
+.form{background:var(--gris-cl);border-radius:12px;padding:12px;margin:10px 0}
+.form label{display:block;font-size:12.5px;font-weight:700;margin:0 0 4px}
+.form input,.form select,.form textarea{width:100%;padding:9px 10px;border-radius:9px;border:1px solid var(--borde);background:#fff;margin-bottom:10px}
+.form .fila{display:flex;gap:8px} .form .fila>*{flex:1}
+.form .zonas-chk{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:13px}
+.form .zonas-chk label{display:flex;gap:4px;align-items:center;font-weight:600;margin:0}
+.form .zonas-chk input{width:auto;margin:0}
+
+/* Detalle de pedido */
+#det{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1500;display:flex;justify-content:flex-end}
+#dlg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;display:flex;align-items:center;justify-content:center;padding:16px}
+#dlg.oculto{display:none}
+#dlg .caja{background:#fff;color:#111;border-radius:14px;max-width:440px;width:100%;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.35);border-top:6px solid #FFD200}
+#dlgTxt{white-space:pre-line;font-size:15px;line-height:1.45;margin-bottom:12px}
+#dlgIn{width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid #ccc;border-radius:8px;margin-bottom:12px}
+#dlg .dlg-bot{display:flex;gap:10px;justify-content:flex-end}
+#dlg .btn-pri.rojo{background:#C62828;color:#fff}
+#det .hoja{width:520px;max-width:100%;height:100%;background:#fff;overflow:auto;padding:18px 18px 30px}
+#det h2{margin:0;font-size:20px}
+#det .sub{color:var(--gris);margin-bottom:12px}
+#det .cerrar{float:right;font-size:22px;line-height:1;padding:4px 8px;border-radius:8px;background:var(--gris-cl)}
+.datos{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;font-size:13.5px;margin-bottom:12px}
+.datos dt{color:var(--gris)} .datos dd{margin:0}
+.linea{position:relative;margin:6px 0 14px;padding-left:22px}
+.linea:before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--borde)}
+.paso{position:relative;margin-bottom:10px;font-size:13.5px}
+.paso:before{content:'';position:absolute;left:-20px;top:3px;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid var(--borde)}
+.paso.ok:before{background:var(--verde);border-color:var(--verde)} .paso.nov:before{background:var(--rojo);border-color:var(--rojo)}
+.paso.tq:before{background:var(--azul);border-color:var(--azul)}
+.paso b{display:block} .paso small{color:var(--gris)}
+.galeria{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.galeria .f{aspect-ratio:1;border-radius:10px;background:var(--gris-cl) center/cover;cursor:zoom-in;position:relative;display:grid;place-items:center;color:var(--gris);font-size:12px}
+.galeria .f span{position:absolute;left:4px;bottom:4px;background:rgba(0,0,0,.65);color:#fff;font-size:10.5px;font-weight:800;padding:2px 6px;border-radius:5px}
+#visor{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:2000;display:grid;place-items:center;cursor:zoom-out}
+#visor img{max-width:96vw;max-height:94vh;border-radius:8px}
+.motivo{background:var(--gris-cl);border-radius:9px;padding:8px 10px;font-size:13px;margin-bottom:12px}
+
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140px);background:var(--negro);color:#fff;padding:11px 16px;border-radius:12px;z-index:3000;max-width:90%;transition:transform .25s;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#toast.ver{transform:translateX(-50%) translateY(0)}
+.spin{width:16px;height:16px;border:2.5px solid rgba(0,0,0,.2);border-top-color:var(--negro);border-radius:50%;animation:g .8s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes g{to{transform:rotate(360deg)}}
+
+/* Marcadores */
+.mk-t{width:22px;height:22px;border-radius:6px;background:var(--amarillo);border:2px solid var(--negro);display:grid;place-items:center;font-size:11px;font-weight:900}
+.mk-p{width:22px;height:22px;transform:rotate(45deg);background:var(--azul);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.mk-c{width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.mk-n{width:20px;height:20px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:10.5px;font-weight:800;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.mk-m{width:30px;height:30px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:11px;font-weight:900;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.mk-v{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--negro);cursor:move}
+.zona-lbl{background:transparent;border:0;box-shadow:none;font-weight:800;font-size:12px;color:#111;text-shadow:0 0 3px #fff,0 0 3px #fff}
+.zona-lbl:before{display:none}
+
+@media (max-width: 900px){
+  .cuerpo{flex-direction:column}
+  aside{width:100%;border-right:0;max-height:none;flex:none}
+  .panel{overflow:visible}
+  #mapaBox{flex:none;height:70vh}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  header .tit small{display:none}
+}
+</style>
+</head>
+<body>
+
+<section id="login" class="oculto">
+  <div class="login-caja">
+    <div class="marca"><div class="rayo"><svg width="18" height="22" viewBox="0 0 22 26"><path d="M13 0L0 15h8l-2 11L22 10h-9z" fill="#111"/></svg></div><b>QUICK <span>RUTEO</span></b></div>
+    <p>Plataforma de ruteo y seguimiento · Cueros Vélez</p>
+    <label for="inUsuario">Usuario</label><input id="inUsuario" autocomplete="username" autocapitalize="characters">
+    <label for="inPin">PIN</label><input id="inPin" type="password" inputmode="numeric" autocomplete="current-password">
+    <button class="btn-pri" id="btnLogin">Ingresar</button>
+    <div id="loginError"></div>
+  </div>
+</section>
+
+<section id="app" class="oculto">
+  <div id="demoBanner" class="oculto">MODO DEMO · datos ficticios, nada se guarda · usuario OPERACION o VELEZ, PIN 1234</div>
+  <header>
+    <div class="tit"><div class="rayo"><svg width="15" height="18" viewBox="0 0 22 26"><path d="M13 0L0 15h8l-2 11L22 10h-9z" fill="#111"/></svg></div>
+      <div><b>QUICK <span>RUTEO</span> · Cueros Vélez</b><small id="hEstado">—</small></div></div>
+    <div class="ctl"><button class="chipd" id="btnHoy">Hoy</button><input type="date" id="inFecha"></div>
+    <div class="ctl" id="ciudades"></div>
+    <div class="ctl"><button class="chipd" id="btnRefrescar" title="Actualizar">↻</button></div>
+    <div class="usuario"><span id="hUsuario"></span><span class="perf" id="hPerfil"></span><button id="btnSalir">Salir</button></div>
+  </header>
+  <div class="cuerpo">
+    <aside>
+      <div class="tabs" id="tabs"></div>
+      <div class="panel" id="panel"></div>
+    </aside>
+    <div id="mapaBox">
+      <div id="mapa"></div>
+      <div class="capas" id="capas"></div>
+      <div class="aviso-mapa oculto" id="avisoMapa"></div>
+      <div class="leyenda-t oculto" id="leyendaT"></div>
+    </div>
+  </div>
+</section>
+
+<div id="det" class="oculto"><div class="hoja" id="detHoja"></div></div>
+<div id="dlg" class="oculto"><div class="caja"><div id="dlgTxt"></div><textarea id="dlgIn" rows="3" class="oculto"></textarea>
+  <div class="dlg-bot"><button class="btn-sec" id="dlgNo">Volver</button><button class="btn-pri" id="dlgSi">Continuar</button></div></div></div>
+<div id="visor" class="oculto"><img id="visorImg" alt="Evidencia"></div>
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════════
+   QUICK RUTEO · Cueros Vélez — plataforma visual (operación y cliente) v1.0
+   CONFIGURACIÓN: la MISMA URL /exec que usa la app del mensajero (index.html).
+   Vacía (o ?demo=1) = modo demo con datos ficticios.
+   ════════════════════════════════════════════════════════════════════ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbxYgBoaJAkNFSI-luXZj1FedQ76XMhBnCCFSNXwG_NQJgmFPjGM1Hz-JkZbf7g5G6vKYw/exec';   // ← PEGA AQUÍ la URL /exec de Apps Script de Cueros Vélez
+const DEMO = !API_URL || new URLSearchParams(location.search).has('demo');
+const POLL_MS = 60000;
+const COLORES = ['#E6194B', '#3CB44B', '#4363D8', '#F58231', '#911EB4', '#42D4F4', '#F032E6', '#9A6324', '#469990', '#808000'];
+const CENTROS = {'Bogotá': [4.66, -74.08], 'Medellín': [6.235, -75.575], 'Todas': [4.66, -74.08]};
+
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+function hoyTxt(){ const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function aMin(h){ const m = String(h || '').match(/^(\d{1,2}):(\d{2})/); return m ? +m[1]*60 + +m[2] : null; }
+function ahoraMin(){ const d = new Date(); return d.getHours()*60 + d.getMinutes(); }
+
+const S = {
+  ses: ls.get('cvadm_ses', null), fecha: hoyTxt(), ciudad: ls.get('cvadm_ciudad', 'Todas'), tab: ls.get('cvadm_tab', ''),
+  D: null, cargando: false, selMens: null, capas: ls.get('cvadm_capas', {zonas: true, rutas: true, pedidos: true, mensajeros: true, puntos: true, tiendas: true}),
+  filtro: {estado: 'activos', q: '', mens: '', ruta: ''}, edicion: null, mapa: null, grupos: null, abiertos: {},
+  colorPor: ls.get('cvadm_colorpor', 'estado'), lapiz: null
+};
+const esOp = () => S.ses && S.ses.perfil === 'Operación';
+
+/* ───────────── API ───────────── */
+async function api(accion, datos){
+  if (DEMO) return demoApi(accion, datos || {});
+  const cuerpo = Object.assign({accion, token: S.ses && S.ses.token}, datos || {});
+  let r;
+  try { r = await fetch(API_URL, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(cuerpo), redirect: 'follow'}); }
+  catch(e){ throw new Error('Sin conexión'); }
+  if (!r.ok) throw new Error('Servidor no disponible (' + r.status + ')');
+  const j = await r.json();
+  if (!j.ok){ if (j.error === 'SESION') salir(true); throw new Error(j.mensaje || j.error || 'Error'); }
+  return j;
+}
+
+/* ───────────── Sesión ───────────── */
+function iniciar(){
+  if (DEMO) $('#demoBanner').classList.remove('oculto');
+  if (!S.ses){ $('#login').classList.remove('oculto'); $('#app').classList.add('oculto'); return; }
+  $('#login').classList.add('oculto'); $('#app').classList.remove('oculto');
+  $('#hUsuario').textContent = S.ses.nombre;
+  $('#hPerfil').textContent = S.ses.perfil; $('#hPerfil').classList.toggle('op', esOp());
+  const tabs = esOp() ? [['ruteo', 'Ruteo'], ['seguimiento', 'Seguimiento'], ['zonas', 'Zonas'], ['indicadores', 'Indicadores']]
+                      : [['ruteo', 'Rutas'], ['seguimiento', 'Seguimiento'], ['indicadores', 'Indicadores']];
+  if (!tabs.some(t => t[0] === S.tab)) S.tab = tabs[0][0];
+  $('#tabs').innerHTML = tabs.map(([k, t]) => `<button data-tab="${k}">${t}</button>`).join('');
+  const ciudades = S.ses.ciudad && S.ses.ciudad !== 'Todas' ? [S.ses.ciudad] : ['Todas'].concat(S.ses.ciudades || ['Bogotá', 'Medellín']);
+  if (!ciudades.includes(S.ciudad)) S.ciudad = ciudades[0];
+  $('#ciudades').innerHTML = ciudades.map(c => `<button class="chipd" data-ciudad="${esc(c)}">${esc(c)}</button>`).join('');
+  $('#inFecha').value = S.fecha;
+  iniciarMapa();
+  pintarCapasCtl();
+  cargar();
+}
+$('#btnLogin').onclick = async () => {
+  const usuario = $('#inUsuario').value.trim().toUpperCase(), pin = $('#inPin').value.trim();
+  $('#loginError').textContent = '';
+  if (!usuario || !pin){ $('#loginError').textContent = 'Ingresa usuario y PIN'; return; }
+  const b = $('#btnLogin'); b.disabled = true; b.innerHTML = '<span class="spin"></span>';
+  try {
+    const r = await api('admLogin', {usuario, pin});
+    S.ses = {token: r.token, nombre: r.nombre, perfil: r.perfil, ciudad: r.ciudad, ciudades: r.ciudades};
+    ls.set('cvadm_ses', S.ses); iniciar();
+  } catch(e){ $('#loginError').textContent = e.message; }
+  finally { b.disabled = false; b.textContent = 'Ingresar'; }
+};
+$('#inPin').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnLogin').click(); });
+function salir(vencida){
+  S.ses = null; S.D = null; ls.del('cvadm_ses'); iniciar();
+  if (vencida) $('#loginError').textContent = 'Tu sesión venció. Ingresa de nuevo.';
+}
+$('#btnSalir').onclick = () => salir(false);
+
+/* ───────────── Carga ───────────── */
+async function cargar(encuadrar){
+  if (!S.ses || S.cargando) return;
+  S.cargando = true; $('#btnRefrescar').innerHTML = '<span class="spin" style="border-top-color:#FFD200"></span>';
+  try {
+    const primera = !S.D;
+    const r = await api('admTablero', {fecha: S.fecha, ciudad: S.ciudad});
+    S.D = r; S.colores = coloresMens(r);
+    if (S.filtro.ruta && !r.pedidos.some(p => String(p.ruta || '') === S.filtro.ruta)) S.filtro.ruta = '';
+    if (!document.activeElement || document.activeElement.id !== 'selRuta') pintarCapasCtl();
+    $('#hEstado').textContent = (r.ciudad === 'Todas' ? 'Bogotá y Medellín' : r.ciudad) + ' · ' + fechaLarga(r.fecha) + ' · actualizado ' + r.hora;
+    pintarTodo(primera || encuadrar);
+  } catch(e){ toast(e.message); }
+  finally { S.cargando = false; $('#btnRefrescar').textContent = '↻'; }
+}
+setInterval(() => { if (document.visibilityState === 'visible' && !S.edicion && !S.lapiz && !S.ubicar && $('#det').classList.contains('oculto')) cargar(); }, POLL_MS);
+$('#btnRefrescar').onclick = () => cargar();
+$('#inFecha').onchange = e => { if (e.target.value){ S.fecha = e.target.value; S.selMens = null; cancelarEdicion(); cargar(true); } };
+$('#btnHoy').onclick = () => { S.fecha = hoyTxt(); $('#inFecha').value = S.fecha; cargar(true); };
+$('#ciudades').addEventListener('click', e => { const b = e.target.closest('[data-ciudad]'); if (!b) return; S.ciudad = b.dataset.ciudad; ls.set('cvadm_ciudad', S.ciudad); S.selMens = null; cancelarEdicion(); cargar(true); });
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; S.tab = b.dataset.tab; ls.set('cvadm_tab', S.tab); cancelarEdicion(); pintarPanel(); pintarMapa(); });
+function fechaLarga(f){ const d = new Date(f + 'T12:00:00'); return d.toLocaleDateString('es-CO', {weekday: 'long', day: 'numeric', month: 'long'}); }
+
+/* Colores: el de la zona del mensajero; si no tiene zona, uno de la paleta */
+function coloresMens(D){
+  const c = {}; let k = 0;
+  (D.zonas || []).forEach(z => { if (z.mensajero && !c[z.mensajero]) c[z.mensajero] = z.color || COLORES[k++ % COLORES.length]; });
+  (D.mensajeros || []).forEach(m => { if (!c[m.nombre]) c[m.nombre] = COLORES[(k++) % COLORES.length]; });
+  return c;
+}
+const colorDe = (n) => (S.colores && S.colores[n]) || '#555';
+const iniciales = (n) => String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase();
+
+/* ───────────── Pintado general ───────────── */
+function pintarTodo(encuadrar){
+  $$('#tabs button').forEach(b => b.classList.toggle('act', b.dataset.tab === S.tab));
+  $$('#ciudades .chipd').forEach(b => b.classList.toggle('act', b.dataset.ciudad === S.ciudad));
+  pintarPanel(); pintarMapa(encuadrar);
+}
+function pintarPanel(){
+  $$('#tabs button').forEach(b => b.classList.toggle('act', b.dataset.tab === S.tab));
+  const p = $('#panel');
+  if (!S.D){ p.innerHTML = '<div class="vacio"><span class="spin"></span> Cargando…</div>'; return; }
+  if (S.tab === 'ruteo') p.innerHTML = panelRuteo();
+  else if (S.tab === 'seguimiento') p.innerHTML = panelSeguimiento();
+  else if (S.tab === 'zonas') p.innerHTML = panelZonas();
+  else p.innerHTML = panelIndicadores();
+}
+const abiertoP = (p) => ['Pendiente', 'Aceptado', 'Recogido', 'Transferido', 'Recibido'].includes(p.estado);
+function semaforoP(p){
+  if (p.estado === 'Entregado') return '#1E8E3E';
+  if (p.estado === 'Novedad' || p.estado === 'Cancelado') return '#D93025';
+  const h = aMin(p.hasta), hoy = S.fecha === hoyTxt();
+  if (p.riesgo) return '#D93025';
+  if (hoy && h != null){ const f = h - ahoraMin(); if (f < 0) return '#D93025'; if (f <= 30) return '#F29900'; }
+  return p.estado === 'Pendiente' ? '#9E9E9E' : '#F2B600';
+}
+function etqEstado(p){ return `<span class="etq e-${esc(p.estado)}">${esc(p.estado)}</span>`; }
+function quienTxt(p){ return p.A ? esc(p.A) + (p.modalidad === 'Trueque' && p.B ? ' → ' + esc(p.B) : '') : '<i style="color:var(--rojo)">sin asignar</i>'; }
+
+/* ───────────── Panel RUTEO (operación) ───────────── */
+function panelRuteo(){
+  if (S.lapiz) return panelLapiz();
+  if (!esOp()) return panelRutasCliente();
+  const D = S.D, ps = D.pedidos;
+  const abiertos = ps.filter(abiertoP);
+  const sinAsig = abiertos.filter(p => !p.A), borr = abiertos.filter(p => p.A && !p.publicado);
+  const tq = ps.filter(p => p.modalidad === 'Trueque');
+  let h = `<div class="kpis">
+    <div class="kpi"><b>${ps.length}</b><small>pedidos del día</small></div>
+    <div class="kpi"><b style="color:${sinAsig.length ? 'var(--rojo)' : 'inherit'}">${sinAsig.length}</b><small>sin asignar</small></div>
+    <div class="kpi"><b style="color:${borr.length ? '#B06000' : 'inherit'}">${borr.length}</b><small>en borrador</small></div>
+    <div class="kpi"><b>${tq.length}</b><small>trueques</small></div></div>
+    <div class="acciones-ruteo"><button class="btn-neg" id="btnGenerar">🧭 Generar ruteo</button><button class="btn-pri" id="btnPublicar" ${borr.length ? '' : 'disabled'}>📤 Publicar${borr.length ? ' (' + borr.length + ')' : ''}</button></div>
+    ${borr.length ? '<button class="btn-sec" id="btnDescartar" style="width:100%;margin-top:8px">↩ Descartar borrador (volver a lo publicado)</button>' : ''}
+    <div class="acciones-ruteo"><button class="btn-sec" id="btnLapiz">✏ Ruteo con lápiz (manual)</button></div>
+    <div class="nota">"Generar ruteo" asigna los pedidos pendientes que no fueron asignados a mano y deja el plan en borrador. Con el lápiz trazas tú la ruta de un conductor sobre el mapa. Los conductores solo ven lo publicado.</div>`;
+  h += bloqueAlertas(D.alertas);
+  h += `<div class="sec-tit">Mensajeros<span class="lin"></span>${S.selMens ? '<a style="cursor:pointer;color:var(--azul);text-transform:none" data-selmens="">ver todos</a>' : ''}</div>`;
+  const rutas = D.rutas || {};
+  const maxC = Math.max(60, ...Object.keys(rutas).map(n => rutas[n].carga || 0));
+  const lista = D.mensajeros.slice().sort((a, b) => (rutas[b.nombre] ? rutas[b.nombre].carga : 0) - (rutas[a.nombre] ? rutas[a.nombre].carga : 0));
+  if (!lista.length) h += '<div class="vacio">No hay mensajeros activos en la hoja Mensajeros para esta ciudad.</div>';
+  // promedio de carga por ciudad: la barra se pone roja si supera en 25 % el promedio de su ciudad
+  const promC = {};
+  lista.forEach(m => { const c = promC[m.ciudad] = promC[m.ciudad] || {s: 0, n: 0}; c.s += rutas[m.nombre] ? rutas[m.nombre].carga : 0; c.n++; });
+  lista.forEach(m => {
+    const r = rutas[m.nombre] || {carga: 0, paradas: [], fin: '', hora0: ''};
+    const mios = ps.filter(p => p.A === m.nombre || p.B === m.nombre);
+    const act = mios.filter(abiertoP).length;
+    const abierto = S.abiertos[m.nombre];
+    h += `<div class="mens ${S.selMens === m.nombre ? 'sel' : ''}">
+      <div class="mens-cab" data-mens="${esc(m.nombre)}"><span class="dot" style="background:${colorDe(m.nombre)}"></span>
+        <div class="nom"><b>${esc(m.nombre)}</b><small>${esc(m.ciudad || '')} · ${act} activos de ${mios.length}${m.enTurno ? ' · <span style="color:var(--verde)">● en turno</span>' : ''}</small><small style="display:block;margin-top:2px">${conexionHtml(m)}</small>${resumenRutas(mios) ? `<small style="display:block">${esc(resumenRutas(mios))}</small>` : ''}
+          <div class="barra"><i class="${promC[m.ciudad].n > 1 && r.carga > 1.25 * promC[m.ciudad].s / promC[m.ciudad].n ? 'alta' : ''}" style="width:${Math.round(100 * r.carga / maxC)}%"></i></div></div>
+        <div class="carga"><b>${r.carga ? Math.floor(r.carga / 60) + ' h ' + String(r.carga % 60).padStart(2, '0') : '—'}</b>${r.paradas.length ? 'termina ' + esc(r.fin) : 'sin paradas'}</div></div>
+      ${abierto ? `<div class="paradas">${r.paradas.length ? r.paradas.map(pa => paradaHtml(pa, m.nombre)).join('') : '<div class="vacio" style="padding:8px">Sin paradas pendientes</div>'}</div>` : ''}
+    </div>`;
+  });
+  if (sinAsig.length){
+    h += `<div class="sec-tit">Sin asignar (${sinAsig.length})<span class="lin"></span></div>`;
+    h += sinAsig.map(filaPedido).join('');
+  }
+  return h;
+}
+/* ───────────── Ruteo con lápiz ─────────────
+   El coordinador elige un conductor y dibuja sobre el mapa pasando por los clientes. Los pedidos que quedan a menos de la
+   tolerancia del trazo se asignan a ese conductor, en el orden en que el trazo pasó por ellos. */
+function lapizConductores(){ return S.D.mensajeros.filter(m => S.ciudad === 'Todas' || !m.ciudad || m.ciudad === S.ciudad); }
+function panelLapiz(){
+  const L0 = S.lapiz, ms = lapizConductores(), sel = lapizSeleccion();
+  const cond = ms.find(m => m.nombre === L0.conductor);
+  let h = `<div class="form"><b>✏ Ruteo con lápiz</b>
+    <p class="nota" style="margin:6px 0 10px">1) Elige el conductor. 2) Dibuja en el mapa con el mouse o el dedo pasando por los clientes, en el orden en que debe entregar. Puedes levantar el lápiz y seguir: el trazo continúa. 3) Revisa la lista y asigna.</p>
+    <label>Conductor</label><select id="lzCond"><option value="">— Elige —</option>${ms.map(m => `<option ${L0.conductor === m.nombre ? 'selected' : ''}>${esc(m.nombre)}</option>`).join('')}</select>
+    <div class="fila"><div><label>Distancia al trazo</label><select id="lzTol">${[150, 300, 500, 800].map(t => `<option value="${t}" ${L0.tol === t ? 'selected' : ''}>hasta ${t} m</option>`).join('')}</select></div>
+    <div><label>Pedidos que toma</label><select id="lzInc"><option value="todos" ${L0.inc === 'todos' ? 'selected' : ''}>Pendientes (asignados o no)</option><option value="libres" ${L0.inc === 'libres' ? 'selected' : ''}>Solo sin asignar</option></select></div></div>
+    <div class="nota" style="margin:0">Trazo: <b>${L0.trazo.length ? Math.round(lapizLargo() / 100) / 10 + ' km' : 'sin dibujar'}</b> · pedidos tomados: <b>${sel.length}</b>${cond ? '' : ' · <span style="color:var(--rojo)">falta el conductor</span>'}</div>
+    ${sel.length ? `<div class="lapiz-lista">${sel.map((x, k) => `<div class="lapiz-item"><span class="parada"><span class="n" style="background:${colorDe(L0.conductor)};color:#fff">${k + 1}</span></span>
+      <div class="c"><b>#${esc(x.p.pedido || x.p.id)}</b> · ${esc(x.p.cliente)}<small>Sale de ${esc(tiendaTxt(x.p))}${x.p.A && x.p.A !== L0.conductor ? ' · hoy: ' + esc(x.p.A) : ''} · a ${Math.round(x.dist)} m del trazo</small></div>
+      <button data-lzquitar="${esc(x.p.id)}" title="Quitar de la ruta">✕</button></div>`).join('')}</div>` : ''}
+    <div class="acciones-ruteo"><button class="btn-sec" id="lzBorrar" ${L0.trazo.length ? '' : 'disabled'}>Borrar trazo</button><button class="btn-sec" id="lzCancelar">Cancelar</button></div>
+    <div class="acciones-ruteo"><button class="btn-pri" id="lzAsignar" ${sel.length && cond ? '' : 'disabled'}>Asignar ${sel.length || ''} a ${esc(L0.conductor || 'conductor')}</button></div>
+    <p class="nota" style="margin:0">Quedan como asignación manual y en borrador: "Generar ruteo" no los cambia y el conductor los ve al publicar, en este orden.</p></div>`;
+  return h;
+}
+function lapizLargo(){ let d = 0; const t = S.lapiz.trazo; for (let i = 1; i < t.length; i++) d += metros(t[i - 1], t[i]); return d; }
+function metros(a, b){ const k = 111320, x = (b[1] - a[1]) * k * Math.cos((a[0] + b[0]) / 2 * Math.PI / 180), y = (b[0] - a[0]) * k; return Math.hypot(x, y); }
+/** Distancia de un punto al trazo y posición a lo largo del trazo (metros). */
+function proyectar(p, t){
+  let mejor = {dist: Infinity, pos: 0}, acum = 0;
+  if (t.length === 1){ return {dist: metros(p, t[0]), pos: 0}; }
+  for (let i = 1; i < t.length; i++){
+    const a = t[i - 1], b = t[i], k = 111320, cx = Math.cos(a[0] * Math.PI / 180);
+    const bx = (b[1] - a[1]) * k * cx, by = (b[0] - a[0]) * k, px = (p[1] - a[1]) * k * cx, py = (p[0] - a[0]) * k;
+    const l2 = bx * bx + by * by, u = l2 ? Math.max(0, Math.min(1, (px * bx + py * by) / l2)) : 0;
+    const d = Math.hypot(px - u * bx, py - u * by);
+    if (d < mejor.dist) mejor = {dist: d, pos: acum + u * Math.sqrt(l2)};
+    acum += Math.sqrt(l2);
+  }
+  return mejor;
+}
+function lapizSeleccion(){
+  const L0 = S.lapiz; if (!L0 || L0.trazo.length < 1) return [];
+  const cond = S.D.mensajeros.find(m => m.nombre === L0.conductor);
+  return S.D.pedidos.filter(p => {
+    if (!p.lat || !p.lng || p.modalidad === 'Intermunicipal' || L0.quitados[p.id]) return false;
+    if (cond && cond.ciudad && p.ciudad !== cond.ciudad) return false;
+    const enCurso = p.estado === 'Recogido' && p.A === L0.conductor && p.modalidad !== 'Trueque';
+    if (!['Pendiente', 'Aceptado'].includes(p.estado) && !enCurso) return false;
+    if (L0.inc === 'libres' && p.A && p.A !== L0.conductor) return false;
+    return true;
+  }).map(p => Object.assign({p}, proyectar([p.lat, p.lng], L0.trazo))).filter(x => x.dist <= L0.tol).sort((a, b) => a.pos - b.pos);
+}
+function lapizIniciar(){
+  S.lapiz = {conductor: S.selMens || '', tol: 300, inc: 'todos', trazo: [], quitados: {}, dibujando: false};
+  $('#mapaBox').classList.add('lapiz');
+  if (S.mapa && S.mapa.dragging) S.mapa.dragging.disable();
+  avisoMapa('Lápiz activo: dibuja pasando por los clientes en orden de entrega');
+  pintarPanel(); pintarMapa();
+}
+function lapizSalir(){
+  S.lapiz = null; $('#mapaBox').classList.remove('lapiz'); $('#avisoMapa').classList.add('oculto');
+  if (S.mapa && S.mapa.dragging) S.mapa.dragging.enable();
+}
+/* Trazo: se agregan puntos con al menos 15 m de separación */
+function lapizPunto(lat, lng){
+  const t = S.lapiz.trazo, q = [+lat.toFixed(6), +lng.toFixed(6)];
+  if (!t.length || metros(t[t.length - 1], q) >= 15) t.push(q);
+  pintarLapiz();
+}
+function lapizFin(){ S.lapiz.dibujando = false; $('#avisoMapa').classList.add('oculto'); pintarPanel(); pintarLapiz(); }
+function pintarLapiz(){
+  if (!S.grupos) return;
+  const G = S.grupos.edicion; G.clearLayers();
+  const L0 = S.lapiz; if (!L0) return;
+  const col = L0.conductor ? colorDe(L0.conductor) : '#111';
+  if (L0.trazo.length > 1) L.polyline(L0.trazo, {color: col, weight: 5, opacity: .85}).addTo(G);
+  if (L0.dibujando) return;
+  lapizSeleccion().forEach((x, k) => L.marker([x.p.lat, x.p.lng], {icon: icono(`<div class="mk-n" style="background:${col};width:22px;height:22px">${k + 1}</div>`, 22, 22), zIndexOffset: 2500})
+    .bindTooltip(`<b>${k + 1}. #${esc(x.p.pedido || x.p.id)}</b><br>${esc(x.p.cliente)}<br><small>Sale de ${esc(tiendaTxt(x.p))}</small>`).addTo(G));
+}
+(function(){
+  const box = document.getElementById('mapa');
+  const ll = (ev) => { const r = box.getBoundingClientRect(); return S.mapa.containerPointToLatLng([ev.clientX - r.left, ev.clientY - r.top]); };
+  box.addEventListener('pointerdown', ev => {
+    if (!S.lapiz || !S.mapa || ev.button > 0) return;
+    if (ev.target.closest && ev.target.closest('.leaflet-control, .capas, .leyenda-t, .aviso-mapa')) return;
+    ev.preventDefault(); ev.stopPropagation();
+    S.lapiz.dibujando = true; try { box.setPointerCapture(ev.pointerId); } catch(e){}
+    const q = ll(ev); lapizPunto(q.lat, q.lng);
+  }, true);
+  box.addEventListener('pointermove', ev => { if (S.lapiz && S.lapiz.dibujando){ ev.preventDefault(); const q = ll(ev); lapizPunto(q.lat, q.lng); } }, true);
+  const fin = () => { if (S.lapiz && S.lapiz.dibujando) lapizFin(); };
+  box.addEventListener('pointerup', fin, true); box.addEventListener('pointercancel', fin, true);
+})();
+
+/* ───────────── Tiendas: nombre y color de origen ───────────── */
+const COLORES_T = ['#E6194B', '#3CB44B', '#4363D8', '#F58231', '#911EB4', '#008080', '#F032E6', '#9A6324', '#800000', '#000075', '#808000', '#42D4F4'];
+function colorTienda(nombre){
+  const ts = (S.D.tiendas || []).map(t => t.nombre).sort();
+  const i = ts.indexOf(nombre); return i < 0 ? '#555' : COLORES_T[i % COLORES_T.length];
+}
+function tiendaTxt(p){ return (p.codigoTienda ? p.codigoTienda + ' · ' : '') + (p.tienda || 'sin tienda'); }
+
+/* Última conexión del conductor: hora de la última ubicación que envió la app */
+function minutosDesde(fh){
+  const m = String(fh || '').match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/); if (!m) return null;
+  return Math.round((Date.now() - new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime()) / 60000);
+}
+function conexionTxt(m){
+  if (!m.horaUbic) return 'Sin conexión registrada';
+  const min = minutosDesde(m.horaUbic), hoy = m.horaUbic.slice(0, 10) === hoyTxt();
+  const hora = hoy ? m.horaUbic.slice(11, 16) : m.horaUbic.slice(8, 10) + '/' + m.horaUbic.slice(5, 7) + ' ' + m.horaUbic.slice(11, 16);
+  const hace = min == null ? '' : min < 1 ? 'ahora' : min < 60 ? 'hace ' + min + ' min' : min < 1440 ? 'hace ' + Math.floor(min / 60) + ' h ' + (min % 60) + ' min' : 'hace ' + Math.floor(min / 1440) + ' día(s)';
+  return 'Última conexión ' + hora + (hace ? ' (' + hace + ')' : '');
+}
+const conexionVieja = (m) => { const x = minutosDesde(m.horaUbic); return x == null || x > 30; };
+function conexionHtml(m){ return `<span style="color:${!m.horaUbic ? 'var(--gris)' : conexionVieja(m) ? '#B06000' : 'var(--verde)'}">📍 ${esc(conexionTxt(m))}</span>`; }
+
+/* Rutas para el perfil Cliente: solo consulta (conductores, su última conexión, paradas y horas estimadas) */
+function panelRutasCliente(){
+  const D = S.D, ps = D.pedidos, rutas = D.rutas || {};
+  const act = ps.filter(abiertoP).length, ent = ps.filter(p => p.estado === 'Entregado').length;
+  let h = `<div class="kpis">
+    <div class="kpi"><b>${ps.length}</b><small>pedidos del día</small></div>
+    <div class="kpi"><b>${act}</b><small>en ruta o pendientes</small></div>
+    <div class="kpi"><b style="color:var(--verde)">${ent}</b><small>entregados</small></div>
+    <div class="kpi"><b>${D.mensajeros.filter(m => m.enTurno).length}</b><small>conductores en turno</small></div></div>
+    <div class="nota">Toca un conductor para ver su ruta en el mapa con las paradas y las horas estimadas. La ubicación es la última que reportó su celular.</div>`;
+  h += `<div class="sec-tit">Conductores<span class="lin"></span>${S.selMens ? '<a style="cursor:pointer;color:var(--azul);text-transform:none" data-selmens="">ver todos</a>' : ''}</div>`;
+  const lista = D.mensajeros.slice().sort((a, b) => (rutas[b.nombre] ? rutas[b.nombre].paradas.length : 0) - (rutas[a.nombre] ? rutas[a.nombre].paradas.length : 0));
+  if (!lista.length) h += '<div class="vacio">No hay conductores para esta ciudad.</div>';
+  lista.forEach(m => {
+    const r = rutas[m.nombre] || {paradas: [], fin: ''};
+    const mios = ps.filter(p => p.A === m.nombre || p.B === m.nombre);
+    const hechos = mios.filter(p => p.estado === 'Entregado' && (p.modalidad !== 'Trueque' || p.B === m.nombre)).length;
+    const abierto = S.abiertos[m.nombre];
+    h += `<div class="mens ${S.selMens === m.nombre ? 'sel' : ''}">
+      <div class="mens-cab" data-mens="${esc(m.nombre)}"><span class="dot" style="background:${colorDe(m.nombre)}"></span>
+        <div class="nom"><b>${esc(m.nombre)}</b><small>${esc(m.ciudad || '')}${m.enTurno ? ' · <span style="color:var(--verde)">● en turno</span>' : ' · fuera de turno'} · ${hechos} entregados de ${mios.length}</small><small style="display:block;margin-top:2px">${conexionHtml(m)}</small>${resumenRutas(mios) ? `<small style="display:block">${esc(resumenRutas(mios))}</small>` : ''}</div>
+        <div class="carga"><b>${r.paradas.length}</b>${r.paradas.length ? 'paradas · termina ' + esc(r.fin) : 'sin paradas'}</div></div>
+      ${abierto ? `<div class="paradas">${r.paradas.length ? r.paradas.map(pa => paradaHtml(pa, m.nombre)).join('') : '<div class="vacio" style="padding:8px">Sin paradas pendientes</div>'}</div>` : ''}
+    </div>`;
+  });
+  return h;
+}
+
+/* Rutas del día (Ruta 1, 2, 3…): cada corte de pedidos publicado tiene su número */
+const etqRuta = (p) => p && p.ruta ? `<span class="etq ruta">RUTA ${esc(p.ruta)}</span>` : '';
+const rutaDePed = (id) => { const p = S.D.pedidos.find(x => x.id === id); return p ? p.ruta || '' : ''; };
+const enRutaFiltro = (p) => !S.filtro.ruta || String(p.ruta || '') === S.filtro.ruta;
+function resumenRutas(ps){
+  const c = {}; ps.filter(abiertoP).forEach(p => { const k = p.ruta || 0; c[k] = (c[k] || 0) + 1; });
+  const ks = Object.keys(c).map(Number).sort((a, b) => (a || 1e6) - (b || 1e6));
+  return ks.length ? ks.map(k => (k ? 'Ruta ' + k : 'Sin ruta') + ': ' + c[k]).join(' · ') : '';
+}
+const TIPO_TXT = {R: 'Recoger', T: 'Entregar a compañero', B: 'Recibir de compañero', E: 'Entregar'};
+function paradaHtml(pa, mens){
+  const items = pa.items.map(it => {
+    const p = S.D.pedidos.find(x => x.id === it.id); if (!p) return '';
+    const lugar = it.tipo === 'R' ? tiendaTxt(p) : (it.tipo === 'T' || it.tipo === 'B') ? p.punto : p.cliente + (p.direccion ? ' · ' + p.direccion : '') + ' · de ' + tiendaTxt(p);
+    const extra = it.tipo === 'T' ? ' → ' + p.B : it.tipo === 'B' ? ' ← ' + p.A : '';
+    if (!enRutaFiltro(p)) return '';
+    return `<div data-ped="${esc(p.id)}"><span class="ic ${it.tipo}">${{R: '↑', T: '⇄', B: '⇄', E: '↓'}[it.tipo]}</span><b>#${esc(p.pedido || p.id)}</b> ${etqRuta(p)} ${TIPO_TXT[it.tipo]}${esc(extra)} · ${esc(lugar)}
+      ${p.riesgo && it.tipo === 'E' ? ' <span class="etq riesgo">tarde</span>' : ''}${esOp() && !p.publicado && abiertoP(p) ? ' <span class="etq borr">borrador</span>' : ''}</div>`;
+  }).join('');
+  if (!items) return '';
+  return `<div class="parada"><span class="n" style="background:${colorDe(mens)};color:#fff">${pa.n}</span><span class="h">${esc(pa.eta)}</span><div class="t">${items}</div></div>`;
+}
+function bloqueAlertas(al){
+  if (!al || !al.length) return '';
+  const TIT = {truequeRiesgo: 'Trueques atrasados', vencido: 'Vencidos', tarde: 'Entrega estimada tarde', sinUbic: 'Sin ubicar en el mapa', intermunicipal: 'Intermunicipales (asignar a mano)',
+    sinAsignar: 'Sin asignar', sinMensajero: 'Sin mensajero en la ciudad', fueraZona: 'Fuera de las zonas dibujadas', borrador: 'Asignados sin publicar', mensajero: 'Mensajero inválido', punto: 'Trueque sin punto válido'};
+  const grupos = {}; al.forEach(a => { (grupos[a.tipo] = grupos[a.tipo] || []).push(a); });
+  const orden = ['truequeRiesgo', 'vencido', 'tarde', 'sinUbic', 'intermunicipal', 'sinAsignar', 'sinMensajero', 'mensajero', 'punto', 'borrador', 'fueraZona'];
+  const rojas = ['truequeRiesgo', 'vencido'];
+  return Object.keys(grupos).sort((a, b) => orden.indexOf(a) - orden.indexOf(b)).map(k => {
+    const lista = grupos[k], vistos = {};
+    const items = lista.filter(a => { const x = vistos[a.id + a.txt]; vistos[a.id + a.txt] = 1; return !x; }).map(a => {
+      const p = S.D.pedidos.find(x => x.id === a.id);
+      return `<li><a data-ped="${esc(a.id)}">#${esc(p ? (p.pedido || p.id) : a.id)}</a> ${esc(a.txt)}${k === 'truequeRiesgo' && esOp() ? ` · <a data-directo="${esc(a.id)}">Pasar a directo</a>` : ''}</li>`;
+    }).join('');
+    return `<div class="avisos ${rojas.includes(k) ? 'alerta-roja' : ''}"><details ${rojas.includes(k) ? 'open' : ''}><summary>${TIT[k] || k} (${lista.length})</summary><ul>${items}</ul></details></div>`;
+  }).join('');
+}
+function filaPedido(p){
+  const tq = p.modalidad === 'Trueque';
+  return `<div class="ped" data-ped="${esc(p.id)}"><span class="sem" style="background:${semaforoP(p)}"></span>
+    <div class="c"><b>#${esc(p.pedido || p.id)}</b> ${etqRuta(p)} ${etqEstado(p)} ${tq ? '<span class="etq tq">TRUEQUE</span>' : ''}${p.modalidad === 'Intermunicipal' ? ' <span class="etq">INTERMUNICIPAL</span>' : ''}${!p.publicado && p.A && abiertoP(p) ? ' <span class="etq borr">borrador</span>' : ''}${p.asignacion === 'Manual' ? ' <span class="etq man">manual</span>' : ''}
+      <small>${esc(p.cliente)} · ${esc(p.direccion)}</small><small>${esc(p.tienda)} · ${quienTxt(p)}</small>${esOp() && abiertoP(p) && (!p.lat || !p.lng) ? `<small style="color:var(--rojo)">📍 Sin ubicar en el mapa${p.sinUbic ? ': ' + esc(p.sinUbic) : ''} · <a data-ubicar="${esc(p.id)}" style="cursor:pointer;text-decoration:underline">ubicar a mano</a></small>` : ''}</div>
+    <div class="d">${p.hasta ? 'hasta ' + esc(p.hasta) : ''}<br>${abiertoP(p) ? (p.etaEcalc || p.etaE ? 'ETA ' + esc(p.etaEcalc || p.etaE) : '') : esc(p.hCierre || '')}</div></div>`;
+}
+
+/* ───────────── Panel SEGUIMIENTO ───────────── */
+function panelSeguimiento(){
+  const D = S.D, f = S.filtro;
+  const ps = D.pedidos.filter(p => {
+    if (f.estado === 'activos' && !abiertoP(p)) return false;
+    if (f.estado === 'entregados' && p.estado !== 'Entregado') return false;
+    if (f.estado === 'novedades' && !['Novedad', 'Cancelado'].includes(p.estado)) return false;
+    if (f.estado === 'trueques' && p.modalidad !== 'Trueque') return false;
+    if (f.mens && p.A !== f.mens && p.B !== f.mens) return false;
+    if (S.selMens && p.A !== S.selMens && p.B !== S.selMens) return false;
+    if (!enRutaFiltro(p)) return false;
+    if (f.q){ const q = f.q.toLowerCase(); if (![p.pedido, p.id, p.cliente, p.direccion, p.tienda].some(x => String(x || '').toLowerCase().includes(q))) return false; }
+    return true;
+  }).sort((a, b) => (abiertoP(b) - abiertoP(a)) || String(a.hasta || '99').localeCompare(String(b.hasta || '99')));
+  const cnt = (fn) => D.pedidos.filter(fn).length;
+  let h = `<div class="kpis">
+    <div class="kpi"><b>${D.pedidos.length}</b><small>pedidos</small></div>
+    <div class="kpi"><b>${cnt(abiertoP)}</b><small>en curso o pendientes</small></div>
+    <div class="kpi"><b style="color:var(--verde)">${cnt(p => p.estado === 'Entregado')}</b><small>entregados</small></div>
+    <div class="kpi"><b style="color:var(--rojo)">${cnt(p => p.estado === 'Novedad')}</b><small>novedades</small></div></div>`;
+  h += bloqueAlertas((D.alertas || []).filter(a => ['truequeRiesgo', 'vencido', 'tarde'].includes(a.tipo)));
+  h += `<div class="filtros">${[['activos', 'Activos'], ['todos', 'Todos'], ['entregados', 'Entregados'], ['novedades', 'Novedades'], ['trueques', 'Trueques']].map(([k, t]) => `<button class="chip ${f.estado === k ? 'act' : ''}" data-fest="${k}">${t}</button>`).join('')}</div>
+    <div class="buscar"><input id="inBuscar" placeholder="Buscar pedido, cliente, dirección o tienda" value="${esc(f.q)}">
+      <select id="selMens"><option value="">Todos los mensajeros</option>${D.mensajeros.map(m => `<option ${f.mens === m.nombre ? 'selected' : ''}>${esc(m.nombre)}</option>`).join('')}</select></div>`;
+  h += ps.length ? ps.map(filaPedido).join('') : '<div class="vacio">Sin pedidos con estos filtros.</div>';
+  return h;
+}
+
+/* ───────────── Panel ZONAS Y PUNTOS (operación) ───────────── */
+function panelZonas(){
+  const D = S.D, e = S.edicion;
+  if (S.ciudad === 'Todas') return `<div class="vacio">Elige <b>Bogotá</b> o <b>Medellín</b> arriba para dibujar o editar sus zonas y puntos de encuentro.</div>` + resumenZonas();
+  let h = '';
+  if (e && (e.tipo === 'zona')){
+    h += `<div class="form"><b>${e.nombreAnterior ? 'Editar zona' : 'Nueva zona'} · ${esc(S.ciudad)}</b>
+      <p class="nota" style="margin:6px 0 10px">${e.vertices.length < 3 ? 'Haz clic en el mapa para marcar las esquinas de la zona (mínimo 3).' : 'Arrastra los puntos blancos para ajustar. Clic en el mapa agrega una esquina; clic derecho sobre una esquina la quita.'} Esquinas: <b>${e.vertices.length}</b></p>
+      <label>Nombre de la zona</label><input id="zNombre" value="${esc(e.nombre || '')}" placeholder="Ej: Norte">
+      <div class="fila"><div><label>Mensajero</label><select id="zMens"><option value="">— Sin mensajero —</option>${D.mensajeros.filter(m => !m.ciudad || m.ciudad === S.ciudad).map(m => `<option ${e.mensajero === m.nombre ? 'selected' : ''}>${esc(m.nombre)}</option>`).join('')}</select></div>
+      <div style="flex:0 0 80px"><label>Color</label><input type="color" id="zColor" value="${esc(e.color || COLORES[D.zonas.length % COLORES.length])}" style="padding:2px;height:40px"></div></div>
+      <div class="acciones-ruteo"><button class="btn-sec" id="zCancelar">Cancelar</button><button class="btn-pri" id="zGuardar" ${e.vertices.length < 3 ? 'disabled' : ''}>Guardar zona</button></div></div>`;
+  } else if (e && e.tipo === 'punto'){
+    const zs = D.zonas.filter(z => z.ciudad === S.ciudad);
+    h += `<div class="form"><b>${e.nombreAnterior ? 'Editar punto de encuentro' : 'Nuevo punto de encuentro'} · ${esc(S.ciudad)}</b>
+      <p class="nota" style="margin:6px 0 10px">${e.lat ? 'Arrastra el marcador azul para ajustar la ubicación.' : 'Haz clic en el mapa donde queda el punto.'}</p>
+      <label>Nombre</label><input id="pNombre" value="${esc(e.nombre || '')}" placeholder="Ej: Punto Calle 100">
+      <label>Dirección o referencia</label><input id="pDir" value="${esc(e.dir || '')}" placeholder="Ej: Calle 100 con Autopista, costado norte">
+      <label>Zonas que atiende (ninguna marcada = todas las de la ciudad)</label>
+      <div class="zonas-chk">${zs.map(z => `<label><input type="checkbox" value="${esc(z.nombre)}" ${(e.zonas || []).includes(z.nombre) ? 'checked' : ''}> ${esc(z.nombre)}</label>`).join('') || '<i>Aún no hay zonas</i>'}</div>
+      <label>Notas para los mensajeros</label><input id="pNotas" value="${esc(e.notas || '')}" placeholder="Ej: frente a la estación">
+      <div class="acciones-ruteo"><button class="btn-sec" id="pCancelar">Cancelar</button><button class="btn-pri" id="pGuardar" ${e.lat ? '' : 'disabled'}>Guardar punto</button></div></div>`;
+  } else {
+    h += `<div class="acciones-ruteo"><button class="btn-neg" id="btnNuevaZona">＋ Nueva zona</button><button class="btn-sec" id="btnNuevoPunto">＋ Punto de encuentro</button></div>`;
+  }
+  const zs = D.zonas.filter(z => z.ciudad === S.ciudad);
+  h += `<div class="sec-tit">Zonas de ${esc(S.ciudad)} (${zs.length})<span class="lin"></span></div>`;
+  h += zs.length ? zs.map(z => {
+    const n = D.pedidos.filter(p => abiertoP(p) && (String(p.zonaO).replace(' (fuera)', '') === z.nombre || String(p.zonaD).replace(' (fuera)', '') === z.nombre)).length;
+    return `<div class="zona"><span class="dot" style="background:${esc(z.color)}"></span><div class="nom"><b>${esc(z.nombre)}</b><small>${z.mensajero ? esc(z.mensajero) : '<span style="color:var(--rojo)">sin mensajero</span>'} · ${n} pedidos activos tocan la zona</small></div>
+      <button data-ezona="${esc(z.nombre)}">Editar</button><button class="rojo" data-bzona="${esc(z.nombre)}">Borrar</button></div>`;
+  }).join('') : '<div class="nota">Aún no hay zonas. Dibuja una por mensajero.</div>';
+  const pts = D.puntos.filter(p => p.ciudad === S.ciudad);
+  h += `<div class="sec-tit">Puntos de encuentro (${pts.length})<span class="lin"></span></div>`;
+  h += pts.length ? pts.map(p => `<div class="zona"><span class="mk-p" style="width:14px;height:14px;flex:none"></span><div class="nom"><b>${esc(p.nombre)}</b><small>${esc(p.dir || '')} · ${p.zonas.length ? esc(p.zonas.join(', ')) : 'todas las zonas'}</small></div>
+      <button data-epunto="${esc(p.nombre)}">Editar</button><button class="rojo" data-bpunto="${esc(p.nombre)}">Borrar</button></div>`).join('')
+    : '<div class="nota">Sin puntos. Sin puntos de encuentro no hay trueques: crea 1 o 2 por cada par de zonas vecinas.</div>';
+  return h;
+}
+function resumenZonas(){
+  const D = S.D; if (!D.zonas.length) return '';
+  return `<table class="t"><tr><th>Zona</th><th>Ciudad</th><th>Mensajero</th></tr>${D.zonas.map(z => `<tr><td><span class="dot" style="display:inline-block;width:10px;height:10px;background:${esc(z.color)}"></span> ${esc(z.nombre)}</td><td>${esc(z.ciudad)}</td><td>${esc(z.mensajero || '—')}</td></tr>`).join('')}</table>`;
+}
+
+/* ───────────── Panel INDICADORES ───────────── */
+function panelIndicadores(){
+  const ps = S.D.pedidos;
+  const ent = ps.filter(p => p.estado === 'Entregado'), nov = ps.filter(p => p.estado === 'Novedad');
+  const conV = ent.filter(p => p.hasta && p.hCierre), aT = conV.filter(p => aMin(p.hCierre) <= aMin(p.hasta));
+  const tq = ps.filter(p => p.modalidad === 'Trueque'), tqC = tq.filter(p => ['Entregado', 'Novedad'].includes(p.estado));
+  const evid = ent.filter(p => p.nFotos.R >= 1 && p.nFotos.E >= 1 && (p.modalidad !== 'Trueque' || p.nFotos.T >= 1));
+  const pct = (a, b) => b ? Math.round(1000 * a / b) / 10 + ' %' : '—';
+  const colorPct = (a, b) => !b ? 'inherit' : a / b >= .95 ? 'var(--verde)' : a / b >= .85 ? '#B06000' : 'var(--rojo)';
+  let h = `<div class="kpis">
+    <div class="kpi"><b>${ps.length}</b><small>pedidos</small></div>
+    <div class="kpi"><b>${ent.length}</b><small>entregados</small></div>
+    <div class="kpi"><b style="color:${colorPct(ent.length, ent.length + nov.length)}">${pct(ent.length, ent.length + nov.length)}</b><small>efectividad</small></div>
+    <div class="kpi"><b style="color:${colorPct(aT.length, conV.length)}">${pct(aT.length, conV.length)}</b><small>a tiempo (${conV.length} con hora límite)</small></div>
+    <div class="kpi"><b>${nov.length}</b><small>novedades</small></div>
+    <div class="kpi"><b>${tq.length}</b><small>trueques · ${pct(tqC.filter(p => p.estado === 'Entregado').length, tqC.length)} efectivos</small></div>
+    <div class="kpi"><b style="color:${colorPct(evid.length, ent.length)}">${pct(evid.length, ent.length)}</b><small>evidencia completa</small></div>
+    <div class="kpi"><b>${ps.filter(abiertoP).length}</b><small>activos</small></div></div>
+    <p class="nota">Indicadores del día seleccionado. El histórico por periodos está en la hoja Indicadores de Google Sheets.</p>`;
+  const tabla = (titulo, clave) => {
+    const g = {};
+    ps.forEach(p => { const k = clave(p) || '—'; const x = g[k] = g[k] || {t: 0, e: 0, n: 0, a: 0, at: 0, cv: 0}; x.t++; if (p.estado === 'Entregado'){ x.e++; if (p.hasta && p.hCierre){ x.cv++; if (aMin(p.hCierre) <= aMin(p.hasta)) x.at++; } } else if (p.estado === 'Novedad') x.n++; else if (abiertoP(p)) x.a++; });
+    return `<div class="sec-tit">${titulo}<span class="lin"></span></div><table class="t"><tr><th></th><th class="n">Total</th><th class="n">Entreg.</th><th class="n">Novedad</th><th class="n">Activos</th><th class="n">A tiempo</th></tr>` +
+      Object.keys(g).sort((a, b) => g[b].t - g[a].t).map(k => `<tr><td>${esc(k)}</td><td class="n">${g[k].t}</td><td class="n">${g[k].e}</td><td class="n">${g[k].n}</td><td class="n">${g[k].a}</td><td class="n" style="color:${colorPct(g[k].at, g[k].cv)};font-weight:700">${pct(g[k].at, g[k].cv)}</td></tr>`).join('') + '</table>';
+  };
+  h += tabla('Por mensajero (quien entrega)', p => p.modalidad === 'Trueque' ? p.B : p.A);
+  h += tabla('Por tienda', p => p.tienda);
+  h += tabla('Por modalidad', p => p.modalidad || 'Sin asignar');
+  const mot = {}; nov.forEach(p => { mot[p.motivoNovedad || 'Sin motivo'] = (mot[p.motivoNovedad || 'Sin motivo'] || 0) + 1; });
+  if (nov.length) h += `<div class="sec-tit">Novedades por motivo<span class="lin"></span></div><table class="t"><tr><th>Motivo</th><th class="n">Cantidad</th></tr>${Object.keys(mot).sort((a, b) => mot[b] - mot[a]).map(k => `<tr><td>${esc(k)}</td><td class="n">${mot[k]}</td></tr>`).join('')}</table>`;
+  return h;
+}
+
+/* ───────────── Eventos del panel ───────────── */
+$('#panel').addEventListener('click', async e => {
+  const t = e.target;
+  const ub = t.closest('[data-ubicar]'); if (ub){ e.stopPropagation(); iniciarUbicar(ub.dataset.ubicar); return; }
+  const dir = t.closest('[data-directo]'); if (dir){ e.stopPropagation(); pasarDirecto(dir.dataset.directo); return; }
+  const ped = t.closest('[data-ped]'); if (ped){ abrirDetalle(ped.dataset.ped); return; }
+  const mc = t.closest('[data-mens]');
+  if (mc){ const n = mc.dataset.mens; S.abiertos[n] = !S.abiertos[n]; S.selMens = S.abiertos[n] ? n : (S.selMens === n ? null : S.selMens); pintarPanel(); pintarMapa(S.abiertos[n]); return; }
+  const sm = t.closest('[data-selmens]'); if (sm){ S.selMens = null; S.abiertos = {}; pintarPanel(); pintarMapa(true); return; }
+  const fe = t.closest('[data-fest]'); if (fe){ S.filtro.estado = fe.dataset.fest; pintarPanel(); pintarMapa(); return; }
+  if (t.id === 'btnLapiz') return lapizIniciar();
+  if (t.id === 'lzBorrar'){ S.lapiz.trazo = []; S.lapiz.quitados = {}; avisoMapa('Lápiz activo: dibuja pasando por los clientes en orden de entrega'); pintarPanel(); pintarLapiz(); return; }
+  if (t.id === 'lzCancelar'){ lapizSalir(); pintarPanel(); pintarMapa(); return; }
+  const lq = t.closest('[data-lzquitar]'); if (lq){ S.lapiz.quitados[lq.dataset.lzquitar] = true; pintarPanel(); pintarLapiz(); return; }
+  if (t.id === 'lzAsignar'){
+    const sel = lapizSeleccion(), A = S.lapiz.conductor;
+    const mov = sel.filter(x => x.p.A && x.p.A !== A).length;
+    if (!await preguntar('Asignar ' + sel.length + ' pedidos a ' + A + ' en este orden' + (mov ? ' (' + mov + ' se quitan a otro conductor)' : '') + '.\nQuedan en borrador hasta publicar.', {si: 'Asignar'})) return;
+    t.disabled = true;
+    try {
+      const r = await api('admRutaManual', {A, ids: sel.map(x => x.p.id)});
+      toast('✏ ' + r.asignados + ' pedidos asignados a ' + A + (r.omitidos.length ? ' · ' + r.omitidos.length + ' omitidos: ' + r.omitidos.join(' · ') : '') + '. Recuerda publicar.');
+      lapizSalir(); S.selMens = A; S.abiertos = {}; S.abiertos[A] = true; await cargar(true);
+    } catch(e){ toast(e.message); t.disabled = false; }
+    return;
+  }
+  if (t.id === 'btnGenerar') return generar();
+  if (t.id === 'btnPublicar') return publicar();
+  if (t.id === 'btnDescartar') return descartar();
+  if (t.id === 'btnNuevaZona'){ S.edicion = {tipo: 'zona', vertices: []}; pintarPanel(); pintarMapa(); avisoMapa('Clic en el mapa para marcar las esquinas de la zona'); return; }
+  if (t.id === 'btnNuevoPunto'){ S.edicion = {tipo: 'punto'}; pintarPanel(); pintarMapa(); avisoMapa('Clic en el mapa donde queda el punto de encuentro'); return; }
+  const ez = t.closest('[data-ezona]');
+  if (ez){ const z = S.D.zonas.find(x => x.nombre === ez.dataset.ezona && x.ciudad === S.ciudad); S.edicion = {tipo: 'zona', nombreAnterior: z.nombre, nombre: z.nombre, mensajero: z.mensajero, color: z.color, vertices: z.poligono.map(p => p.slice())}; pintarPanel(); pintarMapa(true); return; }
+  const bz = t.closest('[data-bzona]');
+  if (bz && await preguntar('¿Borrar la zona ' + bz.dataset.bzona + '? Los pedidos de esa zona quedarán "fuera de zona" hasta que la redibujes.', {si: 'Borrar zona', peligro: true})){ await guardar('admBorrarZona', {nombre: bz.dataset.bzona, ciudad: S.ciudad}, 'Zona borrada'); return; }
+  const ep = t.closest('[data-epunto]');
+  if (ep){ const p = S.D.puntos.find(x => x.nombre === ep.dataset.epunto && x.ciudad === S.ciudad); S.edicion = Object.assign({tipo: 'punto', nombreAnterior: p.nombre}, JSON.parse(JSON.stringify(p))); pintarPanel(); pintarMapa(); S.mapa && S.mapa.setView([p.lat, p.lng], 15); return; }
+  const bp = t.closest('[data-bpunto]');
+  if (bp && await preguntar('¿Borrar el punto de encuentro ' + bp.dataset.bpunto + '? Los trueques ya publicados que lo usan seguirán con ese nombre.', {si: 'Borrar punto', peligro: true})){ await guardar('admBorrarPunto', {nombre: bp.dataset.bpunto, ciudad: S.ciudad}, 'Punto borrado'); return; }
+  if (t.id === 'zCancelar' || t.id === 'pCancelar'){ cancelarEdicion(); pintarPanel(); pintarMapa(); return; }
+  if (t.id === 'zGuardar'){
+    const e2 = S.edicion, nombre = $('#zNombre').value.trim();
+    if (!nombre) return toast('Escribe el nombre de la zona');
+    await guardar('admGuardarZona', {zona: {nombre, nombreAnterior: e2.nombreAnterior || '', ciudad: S.ciudad, mensajero: $('#zMens').value, color: $('#zColor').value, poligono: e2.vertices}}, 'Zona guardada');
+    return;
+  }
+  if (t.id === 'pGuardar'){
+    const e2 = S.edicion, nombre = $('#pNombre').value.trim();
+    if (!nombre) return toast('Escribe el nombre del punto');
+    const zonas = $$('.zonas-chk input:checked').map(x => x.value);
+    await guardar('admGuardarPunto', {punto: {nombre, nombreAnterior: e2.nombreAnterior || '', ciudad: S.ciudad, dir: $('#pDir').value.trim(), notas: $('#pNotas').value.trim(), lat: e2.lat, lng: e2.lng, zonas}}, 'Punto guardado');
+    return;
+  }
+});
+$('#panel').addEventListener('input', e => {
+  if (e.target.id === 'inBuscar'){ S.filtro.q = e.target.value; const pos = e.target.selectionStart; pintarPanel(); const i = $('#inBuscar'); i.focus(); i.setSelectionRange(pos, pos); pintarMapa(); }
+  if (S.edicion && ['zNombre', 'pNombre', 'pDir', 'pNotas'].includes(e.target.id)) S.edicion[{zNombre: 'nombre', pNombre: 'nombre', pDir: 'dir', pNotas: 'notas'}[e.target.id]] = e.target.value;
+});
+$('#panel').addEventListener('change', e => {
+  if (e.target.id === 'selMens'){ S.filtro.mens = e.target.value; pintarPanel(); pintarMapa(true); }
+  if (e.target.id === 'zMens' && S.edicion) S.edicion.mensajero = e.target.value;
+  if (e.target.id === 'zColor' && S.edicion){ S.edicion.color = e.target.value; pintarMapa(); }
+  if (e.target.id === 'lzCond' && S.lapiz){ S.lapiz.conductor = e.target.value; pintarPanel(); pintarLapiz(); }
+  if (e.target.id === 'lzTol' && S.lapiz){ S.lapiz.tol = +e.target.value; pintarPanel(); pintarLapiz(); }
+  if (e.target.id === 'lzInc' && S.lapiz){ S.lapiz.inc = e.target.value; pintarPanel(); pintarLapiz(); }
+});
+async function guardar(accion, datos, ok){
+  try { await api(accion, datos); toast('✓ ' + ok); cancelarEdicion(); await cargar(); }
+  catch(e){ toast(e.message); }
+}
+function cancelarEdicion(){ S.edicion = null; if (S.lapiz) lapizSalir(); $('#avisoMapa').classList.add('oculto'); }
+
+/* Confirmación dentro de la página (no usa confirm/prompt del navegador). Devuelve true/false, o el texto escrito si pide = true. */
+function preguntar(texto, {pide = false, si = 'Continuar', peligro = false, placeholder = ''} = {}){
+  if (window.__AUTO_DLG) return Promise.resolve(pide ? window.__AUTO_DLG : true);   // solo pruebas automáticas
+  return new Promise(res => {
+    $('#dlgTxt').textContent = texto;
+    const inp = $('#dlgIn'); inp.classList.toggle('oculto', !pide); inp.value = ''; inp.placeholder = placeholder;
+    const bs = $('#dlgSi'); bs.textContent = si; bs.classList.toggle('rojo', peligro);
+    $('#dlg').classList.remove('oculto'); (pide ? inp : bs).focus();
+    const fin = (x) => { $('#dlg').classList.add('oculto'); bs.onclick = $('#dlgNo').onclick = null; res(x); };
+    bs.onclick = () => fin(pide ? inp.value.trim() || '(sin motivo)' : true);
+    $('#dlgNo').onclick = () => fin(pide ? null : false);
+  });
+}
+async function generar(){
+  const ab = S.D.pedidos.filter(p => p.estado === 'Pendiente' && p.asignacion !== 'Manual').length;
+  if (!await preguntar('Generar ruteo de ' + fechaLarga(S.fecha) + ' (' + (S.ciudad === 'Todas' ? 'ambas ciudades' : S.ciudad) + ').\n\nSe reasignan ' + ab + ' pedidos pendientes no manuales. Los que cambian quedan en borrador hasta publicar; si no te sirve, puedes descartarlo.', {si: 'Generar'})) return;
+  const b = $('#btnGenerar'); b.disabled = true; b.innerHTML = '<span class="spin" style="border-top-color:#FFD200"></span> Calculando…';
+  try {
+    const r = await api('admGenerar', {fecha: S.fecha, ciudad: S.ciudad});
+    const s = r.resumen;
+    toast('Ruteo listo: ' + s.directos + ' directos · ' + s.trueques + ' trueques' + (s.sinAsignar ? ' · ' + s.sinAsignar + ' sin asignar' : '') + ' · ' + s.cambios + ' cambios');
+    await cargar(true);
+  } catch(e){ toast(e.message); b.disabled = false; b.textContent = '🧭 Generar ruteo'; }
+}
+async function publicar(){
+  if (!await preguntar('Publicar el plan: los mensajeros verán sus pedidos en la app en el siguiente minuto.', {si: 'Publicar'})) return;
+  try { const r = await api('admPublicar', {fecha: S.fecha, ciudad: S.ciudad}); toast('📤 ' + r.publicados + ' pedidos publicados'); await cargar(); }
+  catch(e){ toast(e.message); }
+}
+async function descartar(){
+  if (!await preguntar('Descartar el borrador de ' + fechaLarga(S.fecha) + ' (' + (S.ciudad === 'Todas' ? 'ambas ciudades' : S.ciudad) + ').\n\nLos pedidos sin publicar vuelven a como estaban en la última publicación; los que no estaban asignados quedan sin conductor. Lo publicado, lo manual y lo que está en curso no cambia.', {si: 'Descartar', peligro: true})) return;
+  try { const r = await api('admDescartar', {fecha: S.fecha, ciudad: S.ciudad}); toast('↩ Borrador descartado: ' + r.restaurados + ' vuelven a lo publicado · ' + r.liberados + ' sin asignar'); await cargar(true); }
+  catch(e){ toast(e.message); }
+}
+async function pasarDirecto(id){
+  const p = S.D.pedidos.find(x => x.id === id);
+  if (!await preguntar('Quitar el trueque del pedido #' + (p.pedido || id) + ': lo entrega directamente ' + p.A + '.', {si: 'Pasar a directo'})) return;
+  try { await api('admPasarDirecto', {id}); toast('✓ Pasó a entrega directa por ' + p.A); await cargar(); if (!$('#det').classList.contains('oculto')) abrirDetalle(id); }
+  catch(e){ toast(e.message); }
+}
+
+/* ───────────── Detalle de pedido ───────────── */
+async function abrirDetalle(id){
+  const p = S.D.pedidos.find(x => x.id === id); if (!p) return;
+  const tq = p.modalidad === 'Trueque', op = esOp();
+  const paso = (ok, cls, tit, sub) => `<div class="paso ${ok ? cls || 'ok' : ''}"><b>${tit}</b>${sub ? '<small>' + sub + '</small>' : ''}</div>`;
+  let lin = paso(true, 'ok', 'Creado', esc(p.fecha)) +
+    paso(!!p.hAceptado, 'ok', 'Aceptado' + (p.hAceptado ? ' · ' + esc(p.hAceptado) : ''), p.A ? esc(p.A) : '') +
+    paso(!!p.hRecogido, 'ok', 'Recogido en tienda' + (p.hRecogido ? ' · ' + esc(p.hRecogido) : ''), esc(p.tienda) + (p.entregaTienda ? ' · entregó ' + esc(p.entregaTienda) : '') + (p.etaR && !p.hRecogido ? ' · estimado ' + esc(p.etaR) : ''));
+  if (tq) lin += paso(!!p.hTransferido, 'tq', 'Traspaso ' + esc(p.A) + ' → ' + esc(p.B) + (p.hTransferido ? ' · ' + esc(p.hTransferido) : ''), esc(p.punto) + (p.horaTrueque ? ' · pactado ' + esc(p.horaTrueque) : '')) +
+                 paso(!!p.hRecibido, 'tq', 'Recibido por ' + esc(p.B) + (p.hRecibido ? ' · ' + esc(p.hRecibido) : ''), '');
+  lin += p.estado === 'Novedad' ? paso(true, 'nov', 'Novedad · ' + esc(p.hCierre), esc(p.motivoNovedad) + (p.observacion ? ' · ' + esc(p.observacion) : ''))
+       : p.estado === 'Cancelado' ? paso(true, 'nov', 'Cancelado', esc(p.observacion))
+       : paso(p.estado === 'Entregado', 'ok', 'Entregado' + (p.hCierre ? ' · ' + esc(p.hCierre) : ''), p.recibe ? 'Recibió ' + esc(p.recibe) : (p.etaEcalc || p.etaE ? 'estimado ' + esc(p.etaEcalc || p.etaE) : ''));
+  const mensOpts = (sel, vacia) => `<option value="">${vacia}</option>` + S.D.mensajeros.filter(m => !m.ciudad || m.ciudad === p.ciudad).map(m => `<option ${sel === m.nombre ? 'selected' : ''}>${esc(m.nombre)}</option>`).join('');
+  const ptsOpts = S.D.puntos.filter(x => x.ciudad === p.ciudad).map(x => `<option ${p.punto === x.nombre ? 'selected' : ''}>${esc(x.nombre)}</option>`).join('');
+  const editable = op && abiertoP(p);
+  $('#detHoja').innerHTML = `<button class="cerrar" id="detCerrar" aria-label="Cerrar">×</button>
+    <h2>Pedido #${esc(p.pedido || p.id)}</h2>
+    <div class="sub">${etqEstado(p)} ${tq ? '<span class="etq tq">TRUEQUE</span>' : ''} ${p.riesgo ? '<span class="etq riesgo">entrega estimada tarde</span>' : ''} · ${esc(p.id)} · ${esc(p.ciudad)}</div>
+    <dl class="datos">
+      <dt>Tienda</dt><dd>${esc(tiendaTxt(p))}${p.dirTienda ? '<br><small>' + esc(p.dirTienda) + '</small>' : ''}</dd>
+      <dt>Cliente</dt><dd>${esc(p.cliente)}${p.telefono ? ' · ' + esc(p.telefono) : ''}<br><small>${esc(p.direccion)}${p.ciudadDestino && p.ciudadDestino !== p.ciudad ? ' · ' + esc(p.ciudadDestino) : ''}</small>
+        ${editable && (!p.lat || !p.lng) ? `<br><small style="color:var(--rojo)">📍 Sin ubicar en el mapa${p.sinUbic ? ': ' + esc(p.sinUbic) : ''}</small>` : ''}
+        ${editable ? `<br><button class="btn-sec" style="margin-top:6px" data-ubicar="${esc(p.id)}">📍 ${p.lat && p.lng ? 'Corregir ubicación en el mapa' : 'Ubicar en el mapa'}</button>` : ''}</dd>
+      <dt>Contenido</dt><dd>${p.paquetes ? esc(p.paquetes) + ' paquete(s)' : '—'}${p.descripcion ? ' · ' + esc(p.descripcion) : ''}</dd>
+      <dt>Ventana</dt><dd>${esc(p.desde || '—')} a ${esc(p.hasta || '—')} · prioridad ${esc(p.prioridad)}</dd>
+      ${p.indicaciones ? `<dt>Indicaciones</dt><dd>${esc(p.indicaciones)}</dd>` : ''}
+      <dt>Asignación</dt><dd>${etqRuta(p)} ${quienTxt(p)}${p.ordenManual ? ' · ruta con lápiz, parada ' + p.ordenManual : ''}${tq ? '<br><small>en ' + esc(p.punto) + (p.horaTrueque ? ' a las ' + esc(p.horaTrueque) : '') + '</small>' : ''}${!p.publicado && p.A && abiertoP(p) ? ' <span class="etq borr">borrador</span>' : ''}</dd>
+      <dt>Zonas</dt><dd>${esc(p.zonaO || '—')} → ${esc(p.zonaD || '—')}</dd>
+    </dl>
+    ${op && p.motivoAsig ? `<div class="motivo">🧭 ${esc(p.motivoAsig)}</div>` : ''}
+    <div class="sec-tit">Línea de tiempo<span class="lin"></span></div><div class="linea">${lin}</div>
+    <div class="sec-tit">Evidencias<span class="lin"></span></div><div class="galeria" id="galeria">${p.conFotos ? '<div class="f"><span class="spin"></span></div>' : '<div class="nota" style="grid-column:1/-1">Sin fotos todavía.</div>'}</div>
+    ${editable ? `<div class="sec-tit">Ajustar asignación<span class="lin"></span></div>
+      <div class="form">
+        <div class="fila"><div><label>Recoge en tienda</label><select id="dA" ${['Recogido', 'Transferido', 'Recibido'].includes(p.estado) ? 'disabled' : ''}>${mensOpts(p.A, '— sin asignar —')}</select></div>
+        <div><label>Entrega (si es trueque)</label><select id="dB" ${['Transferido', 'Recibido'].includes(p.estado) ? 'disabled' : ''}>${mensOpts(tq ? p.B : '', '— el mismo (directo) —')}</select></div></div>
+        <div class="fila"><div><label>Punto de encuentro</label><select id="dP"><option value="">—</option>${ptsOpts}</select></div>
+        <div style="flex:0 0 120px"><label>Hora trueque</label><input id="dH" type="time" value="${esc(p.horaTrueque || '')}"></div></div>
+        <div class="acciones-ruteo"><button class="btn-pri" id="dGuardar">Guardar asignación</button></div>
+        <p class="nota" style="margin:0">Queda como asignación manual: "Generar ruteo" ya no la cambia. Hora vacía = la calcula el sistema.</p>
+      </div>
+      <div class="acciones-ruteo">${tq && !['Transferido', 'Recibido'].includes(p.estado) ? `<button class="btn-sec" data-directo="${esc(p.id)}">Pasar a directo</button>` : ''}<button class="btn-rojo" id="dCancelar">Cancelar pedido</button></div>` : ''}`;
+  $('#det').classList.remove('oculto');
+  $('#detCerrar').onclick = () => $('#det').classList.add('oculto');
+  const dg = $('#dGuardar');
+  if (dg) dg.onclick = async () => {
+    const A = $('#dA').value, B = $('#dB').value, punto = $('#dP').value, horaTrueque = $('#dH').value;
+    if (B && B !== A && !punto) return toast('Elige el punto de encuentro del trueque');
+    try { await api('admMover', {id: p.id, A, B, punto, horaTrueque}); toast('✓ Asignación guardada'); await cargar(); abrirDetalle(p.id); } catch(e){ toast(e.message); }
+  };
+  const dc = $('#dCancelar');
+  if (dc) dc.onclick = async () => {
+    const motivo = await preguntar('Cancelar el pedido #' + (p.pedido || p.id) + ' (' + (p.cliente || '') + ').\nEl pedido se cierra y sale de las rutas. Escribe el motivo:', {pide: true, si: 'Cancelar pedido', peligro: true, placeholder: 'Ej.: el cliente lo anuló'});
+    if (motivo === null) return;
+    try { await api('admCancelar', {id: p.id, motivo}); toast('Pedido cancelado'); await cargar(); abrirDetalle(p.id); } catch(e){ toast(e.message); }
+  };
+  enfocarPedido(p);
+  if (p.conFotos) cargarFotos(p);
+}
+$('#det').addEventListener('click', e => { if (e.target.id === 'det') $('#det').classList.add('oculto'); const d = e.target.closest('[data-directo]'); if (d) pasarDirecto(d.dataset.directo);
+  const ub = e.target.closest('[data-ubicar]'); if (ub) iniciarUbicar(ub.dataset.ubicar); });
+/* Ubicar a mano la entrega: el coordinador toca el mapa donde queda el cliente */
+function iniciarUbicar(id){
+  const p = S.D.pedidos.find(x => x.id === id); if (!p) return;
+  cancelarEdicion(); $('#det').classList.add('oculto');
+  S.ubicar = {id};
+  $('#mapaBox').classList.add('ubicando');
+  avisoMapa('Toca en el mapa dónde queda el cliente de #' + (p.pedido || p.id) + ' (' + (p.direccion || 'sin dirección') + ') · Esc para cancelar');
+}
+async function clicUbicar(ll){
+  const u = S.ubicar; S.ubicar = null; $('#mapaBox').classList.remove('ubicando'); $('#avisoMapa').classList.add('oculto');
+  try { const r = await api('admUbicar', {id: u.id, lat: ll[0], lng: ll[1]});
+    toast('✓ Entrega ubicada' + (r.zona ? ' en ' + r.zona : '') + '. Genera el ruteo para asignarla o asígnala a mano.'); await cargar(); abrirDetalle(u.id);
+  } catch(e){ toast(e.message); }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape'){ $('#visor').classList.add('oculto'); $('#det').classList.add('oculto');
+  if (S.ubicar){ S.ubicar = null; $('#mapaBox').classList.remove('ubicando'); $('#avisoMapa').classList.add('oculto'); } } });
+const cacheFotos = {};
+async function cargarFotos(p){
+  const g = $('#galeria');
+  try {
+    const r = await api('admFotos', {id: p.id});
+    const lista = [].concat(r.fotos.R.map(n => ['R', n]), (r.fotos.T || []).map(n => ['T', n]), (r.fotos.B || []).map(n => ['B', n]), r.fotos.E.map(n => ['E', n]));
+    if (!lista.length){ g.innerHTML = '<div class="nota" style="grid-column:1/-1">Sin fotos.</div>'; return; }
+    const ROT = {R: 'Recogida', T: 'Traspaso', B: 'Recibido', E: p.estado === 'Novedad' ? 'Novedad' : 'Entrega'};
+    g.innerHTML = lista.map(([e, n]) => `<div class="f" data-foto="${esc(n)}"><span>${ROT[e]}</span></div>`).join('');
+    for (const [, n] of lista){
+      const el = g.querySelector(`[data-foto="${CSS.escape(n)}"]`);
+      try {
+        const data = cacheFotos[n] || (cacheFotos[n] = (await api('admFoto', {id: p.id, nombre: n})).data);
+        if (el){ el.style.backgroundImage = `url(${data})`; el.onclick = () => { $('#visorImg').src = data; $('#visor').classList.remove('oculto'); }; }
+      } catch(e){ if (el) el.insertAdjacentHTML('beforeend', 'No disponible'); }
+    }
+  } catch(e){ g.innerHTML = `<div class="nota" style="grid-column:1/-1">${esc(e.message)}</div>`; }
+}
+$('#visor').onclick = () => $('#visor').classList.add('oculto');
+
+/* ───────────── MAPA ───────────── */
+function iniciarMapa(){
+  if (S.mapa || !window.L){ if (!window.L) $('#mapa').innerHTML = '<div class="vacio" style="padding-top:30vh">El mapa necesita conexión a internet.</div>'; return; }
+  S.mapa = L.map('mapa', {zoomControl: true}).setView(CENTROS[S.ciudad] || CENTROS.Todas, 12);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '© OpenStreetMap'}).addTo(S.mapa);
+  S.grupos = {};
+  ['zonas', 'rutas', 'pedidos', 'tiendas', 'puntos', 'mensajeros', 'edicion', 'foco'].forEach(k => S.grupos[k] = L.layerGroup().addTo(S.mapa));
+  S.mapa.on('click', clicMapa);
+}
+function pintarCapasCtl(){
+  const nombres = [['zonas', 'Zonas'], ['rutas', 'Rutas'], ['pedidos', 'Clientes'], ['tiendas', 'Tiendas'], ['puntos', 'Puntos'], ['mensajeros', 'Mensajeros']];
+  $('#capas').innerHTML = nombres.map(([k, t]) => `<label><input type="checkbox" data-capa="${k}" ${S.capas[k] ? 'checked' : ''}> ${t}</label>`).join('') +
+    `<label>Ruta: <select id="selRuta"><option value="">todas</option>${[...new Set(((S.D && S.D.pedidos) || []).map(p => p.ruta).filter(Boolean))].sort((a, b) => a - b).map(r => `<option value="${r}" ${S.filtro.ruta === String(r) ? 'selected' : ''}>Ruta ${r}</option>`).join('')}</select></label>` +
+    `<label>Color clientes: <select id="selColorPor"><option value="estado" ${S.colorPor === 'estado' ? 'selected' : ''}>por estado</option><option value="tienda" ${S.colorPor === 'tienda' ? 'selected' : ''}>por tienda</option></select></label>`;
+}
+$('#capas').addEventListener('change', e => { if (e.target.id === 'selRuta'){ S.filtro.ruta = e.target.value; pintarPanel(); pintarMapa(true); return; }
+  if (e.target.id === 'selColorPor'){ S.colorPor = e.target.value; ls.set('cvadm_colorpor', S.colorPor); pintarMapa(); return; } const k = e.target.dataset.capa; if (!k) return; S.capas[k] = e.target.checked; ls.set('cvadm_capas', S.capas); pintarMapa(); });
+const icono = (html, w, h, ax, ay) => L.divIcon({className: '', html, iconSize: [w, h], iconAnchor: [ax == null ? w / 2 : ax, ay == null ? h / 2 : ay]});
+
+/* Conductor en foco: el que se tocó en Ruteo/Rutas o el elegido en el filtro de Seguimiento */
+const mensFoco = () => S.selMens || (S.tab === 'seguimiento' && S.filtro.mens) || null;
+function pedidosVisibles(){
+  const D = S.D, f = S.filtro, foco = mensFoco();
+  return D.pedidos.filter(p => {
+    if (foco && p.A !== foco && p.B !== foco) return false;
+    if (!enRutaFiltro(p)) return false;
+    if (S.tab === 'seguimiento'){
+      if (f.estado === 'activos' && !abiertoP(p)) return false;
+      if (f.estado === 'entregados' && p.estado !== 'Entregado') return false;
+      if (f.estado === 'novedades' && !['Novedad', 'Cancelado'].includes(p.estado)) return false;
+      if (f.estado === 'trueques' && p.modalidad !== 'Trueque') return false;
+      if (f.mens && p.A !== f.mens && p.B !== f.mens) return false;
+    }
+    return true;
+  });
+}
+function pintarMapa(encuadrar){
+  if (!S.mapa || !S.D) return;
+  const G = S.grupos, D = S.D, lim = [];
+  Object.keys(G).forEach(k => { if (k !== 'foco') G[k].clearLayers(); });
+  const foco = mensFoco();
+  const atenuar = (n) => !!foco && n !== foco;
+  const enZonas = S.tab === 'zonas';
+  // Zonas
+  if (S.capas.zonas || enZonas) D.zonas.forEach(z => {
+    if (S.edicion && S.edicion.tipo === 'zona' && S.edicion.nombreAnterior === z.nombre && z.ciudad === S.ciudad) return;
+    const pg = L.polygon(z.poligono, {color: z.color || '#555', weight: 2, opacity: atenuar(z.mensajero) ? .35 : .9, fillOpacity: atenuar(z.mensajero) ? .03 : .09}).addTo(G.zonas);
+    pg.bindTooltip(`${esc(z.nombre)}${z.mensajero ? '<br>' + esc(z.mensajero) : ''}`, {permanent: true, direction: 'center', className: 'zona-lbl'});
+    pg.on('click', ev => { if (S.edicion) clicMapa(ev); });
+    z.poligono.forEach(v => lim.push(v));
+  });
+  // Tiendas
+  const porT = S.colorPor === 'tienda';
+  if (S.capas.tiendas) D.tiendas.forEach(t => {
+    const n = D.pedidos.filter(p => p.tienda === t.nombre).length;
+    L.marker([t.lat, t.lng], {icon: icono(`<div class="mk-t" style="${porT ? 'background:' + colorTienda(t.nombre) + ';color:#fff' : ''}">${esc(t.codigo || 'T')}</div>`, 22, 22), zIndexOffset: 300})
+      .bindTooltip('<b>' + esc((t.codigo ? t.codigo + ' · ' : '') + t.nombre) + '</b><br>' + esc(t.dir || '') + '<br><small>' + n + ' pedido(s) salen de aquí</small>').addTo(G.tiendas);
+  });
+  // Puntos de encuentro
+  if (S.capas.puntos || enZonas) D.puntos.forEach(p => {
+    if (S.edicion && S.edicion.tipo === 'punto' && S.edicion.nombreAnterior === p.nombre) return;
+    L.marker([p.lat, p.lng], {icon: icono('<div class="mk-p"></div>', 22, 22), zIndexOffset: 400}).bindTooltip('<b>⇄ ' + esc(p.nombre) + '</b><br>' + esc(p.dir || '') + '<br><small>' + (p.zonas.length ? esc(p.zonas.join(', ')) : 'todas las zonas') + '</small>').addTo(G.puntos);
+  });
+  if (!enZonas){
+    // Rutas
+    if (S.capas.rutas) Object.keys(D.rutas || {}).forEach(n => {
+      const r0 = D.rutas[n]; if (!r0.paradas.length || atenuar(n)) return;
+      const r = S.filtro.ruta ? Object.assign({}, r0, {paradas: r0.paradas.filter(pa => pa.items.some(it => String(rutaDePed(it.id)) === S.filtro.ruta))}) : r0;
+      if (!r.paradas.length) return;
+      const col = colorDe(n), tenue = false;
+      const linea = r.paradas.map(pa => [pa.lat, pa.lng]);
+      if (r.inicio) linea.unshift([r.inicio.lat, r.inicio.lng]);
+      L.polyline(linea, {color: col, weight: tenue ? 2 : 4, opacity: tenue ? .2 : .8}).addTo(G.rutas);
+      if (!tenue) r.paradas.forEach(pa => {
+        const tipos = pa.items.map(i => i.tipo);
+        L.marker([pa.lat, pa.lng], {icon: icono(`<div class="mk-n" style="background:${col}">${pa.n}</div>`, 20, 20), zIndexOffset: 500})
+          .bindTooltip(`<b>${esc(n)} · parada ${pa.n} · ${esc(pa.eta)}</b><br>` + pa.items.map(it => { const p = D.pedidos.find(x => x.id === it.id); return (p && p.ruta ? '[Ruta ' + esc(p.ruta) + '] ' : '') + TIPO_TXT[it.tipo] + ' #' + esc(p ? p.pedido || p.id : it.id) + (p && it.tipo === 'E' ? ' · de ' + esc(tiendaTxt(p)) : ''); }).join('<br>'))
+          .on('click', () => { const it = pa.items[0]; abrirDetalle(it.id); }).addTo(G.rutas);
+        if (foco) lim.push([pa.lat, pa.lng]);
+        void tipos;
+      });
+    });
+    // Clientes (destinos)
+    if (S.capas.pedidos) pedidosVisibles().forEach(p => {
+      if (!p.lat || !p.lng) return;
+      const borde = porT ? `;border-color:${semaforoP(p)}` : '';
+      L.marker([p.lat, p.lng], {icon: icono(`<div class="mk-c" style="background:${porT ? colorTienda(p.tienda) : semaforoP(p)}${borde}"></div>`, 14, 14), zIndexOffset: 200})
+        .bindTooltip(`<b>#${esc(p.pedido || p.id)}</b> · ${esc(p.estado)}<br>${esc(p.cliente)}<br>Sale de: <b>${esc(tiendaTxt(p))}</b><br><small>${p.ruta ? 'Ruta ' + esc(p.ruta) + ' · ' : ''}${quienTxt(p)}${p.ordenManual ? ' · ruta manual, parada ' + p.ordenManual : ''}</small>`).on('click', () => { if (!S.lapiz) abrirDetalle(p.id); }).addTo(G.pedidos);
+      if (!foco) lim.push([p.lat, p.lng]);
+    });
+    // Mensajeros (posición actual)
+    if (S.capas.mensajeros) D.mensajeros.forEach(m => {
+      if (!m.lat || !m.lng || atenuar(m.nombre)) return;
+      if (foco) lim.push([m.lat, m.lng]);
+      const vieja = conexionVieja(m);
+      L.marker([m.lat, m.lng], {icon: icono(`<div class="mk-m" style="background:${vieja ? '#8A8A85' : colorDe(m.nombre)};opacity:${atenuar(m.nombre) ? .35 : 1}">${esc(iniciales(m.nombre))}</div>`, 30, 30), zIndexOffset: 900})
+        .bindTooltip(`<b>${esc(m.nombre)}</b><br>${esc(conexionTxt(m))}${m.enTurno ? '<br>● en turno' : '<br>fuera de turno'}${vieja ? '<br><small>Más de 30 min sin reportar: puede estar sin señal o con la app cerrada</small>' : ''}`).addTo(G.mensajeros);
+    });
+  }
+  // Leyenda de tiendas (modo color por tienda)
+  const ley = $('#leyendaT');
+  if (porT && !enZonas){
+    const usadas = [...new Set(pedidosVisibles().map(p => p.tienda).filter(Boolean))].sort();
+    ley.innerHTML = '<b>Sale de (tienda)</b>' + (usadas.length ? usadas.map(n => { const t = D.tiendas.find(x => x.nombre === n); return `<div><i style="background:${colorTienda(n)}"></i>${esc((t && t.codigo ? t.codigo + ' · ' : '') + n)}</div>`; }).join('') : '<div>Sin pedidos</div>');
+    ley.classList.remove('oculto');
+  } else ley.classList.add('oculto');
+  if (S.lapiz) pintarLapiz(); else pintarEdicion();
+  if (encuadrar){
+    if (lim.length > 1) S.mapa.fitBounds(lim, {padding: [40, 40], maxZoom: 15});
+    else S.mapa.setView(CENTROS[S.ciudad] || CENTROS.Todas, 12);
+  }
+}
+function enfocarPedido(p){
+  if (!S.mapa) return;
+  const G = S.grupos.foco; G.clearLayers();
+  const pts = [];
+  if (p.latO && p.lngO) pts.push([p.latO, p.lngO]);
+  const pt = p.modalidad === 'Trueque' ? S.D.puntos.find(x => x.nombre === p.punto && x.ciudad === p.ciudad) : null;
+  if (pt) pts.push([pt.lat, pt.lng]);
+  if (p.lat && p.lng) pts.push([p.lat, p.lng]);
+  if (pts.length > 1) L.polyline(pts, {color: p.modalidad === 'Trueque' ? '#1A73E8' : '#111', weight: 4, dashArray: '8 8'}).addTo(G);
+  if (p.lat && p.lng) L.circleMarker([p.lat, p.lng], {radius: 12, color: '#111', weight: 3, fill: false}).addTo(G);
+  if (pts.length) S.mapa.fitBounds(pts.length > 1 ? pts : [pts[0], pts[0]], {padding: [80, 80], maxZoom: 15});
+  setTimeout(() => G.clearLayers(), 20000);
+}
+
+/* Edición de zonas y puntos sobre el mapa */
+function avisoMapa(txt){ const a = $('#avisoMapa'); a.innerHTML = esc(txt); a.classList.remove('oculto'); }
+function clicMapa(ev){
+  if (S.ubicar) return clicUbicar([+ev.latlng.lat.toFixed(6), +ev.latlng.lng.toFixed(6)]);
+  const e = S.edicion; if (!e) return;
+  const ll = [+ev.latlng.lat.toFixed(6), +ev.latlng.lng.toFixed(6)];
+  if (e.tipo === 'zona'){
+    if (e.vertices.length < 3) e.vertices.push(ll);
+    else e.vertices.splice(posInsercion(e.vertices, ll), 0, ll);   // agrega la esquina en el lado más cercano
+    if (e.vertices.length >= 3) $('#avisoMapa').classList.add('oculto');
+  } else { e.lat = ll[0]; e.lng = ll[1]; $('#avisoMapa').classList.add('oculto'); }
+  pintarPanel(); pintarEdicion();
+}
+function posInsercion(v, p){
+  let mejor = 0, costo = Infinity;
+  const d = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  for (let i = 0; i < v.length; i++){ const a = v[i], b = v[(i + 1) % v.length]; const c = d(a, p) + d(p, b) - d(a, b); if (c < costo){ costo = c; mejor = i + 1; } }
+  return mejor;
+}
+function pintarEdicion(){
+  if (!S.grupos) return;
+  const G = S.grupos.edicion; G.clearLayers();
+  const e = S.edicion; if (!e) return;
+  if (e.tipo === 'zona'){
+    const col = e.color || '#111';
+    if (e.vertices.length >= 3) L.polygon(e.vertices, {color: col, weight: 3, dashArray: '6 6', fillOpacity: .15}).addTo(G);
+    else if (e.vertices.length === 2) L.polyline(e.vertices, {color: col, weight: 3, dashArray: '6 6'}).addTo(G);
+    e.vertices.forEach((v, i) => {
+      const m = L.marker(v, {draggable: true, icon: icono('<div class="mk-v"></div>', 12, 12), zIndexOffset: 2000}).addTo(G);
+      m.on('drag', ev => { const q = ev.target.getLatLng(); e.vertices[i] = [+q.lat.toFixed(6), +q.lng.toFixed(6)]; });
+      m.on('dragend', () => pintarEdicion());
+      m.on('contextmenu', () => { if (e.vertices.length <= 3) return toast('Una zona necesita al menos 3 esquinas'); e.vertices.splice(i, 1); pintarPanel(); pintarEdicion(); });
+    });
+  } else if (e.lat){
+    const m = L.marker([e.lat, e.lng], {draggable: true, icon: icono('<div class="mk-p" style="width:26px;height:26px"></div>', 26, 26), zIndexOffset: 2000}).addTo(G);
+    m.on('dragend', ev => { const q = ev.target.getLatLng(); e.lat = +q.lat.toFixed(6); e.lng = +q.lng.toFixed(6); });
+  }
+}
+
+/* ───────────── Toast ───────────── */
+let tT;
+function toast(t){ const el = $('#toast'); el.textContent = t; el.className = 'ver'; clearTimeout(tT); tT = setTimeout(() => el.className = '', 4200); }
+
+/* ───────────── MODO DEMO (datos ficticios; usa el mismo motor de ruteo del servidor) ───────────── */
+// Copia del motor de Code.gs (solo para el modo demo)
+const ABIERTOS = ['Pendiente', 'Aceptado', 'Recogido', 'Transferido', 'Recibido'];
+function normalizar_(s){ return String(s || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+// ==MOTOR-INICIO==  (funciones puras: no usan servicios de Google; se prueban fuera de Apps Script)
+/**
+ * Parámetros del ruteo. Se pueden ajustar tras las primeras semanas de operación.
+ *   VEL_KMH / FACTOR: velocidad urbana promedio en moto y factor calles vs línea recta.
+ *   MIN_PARADA: minutos por parada (parquear, entregar, firma, foto).
+ *   PEN_PRIORIDAD: minutos "virtuales" que retrasan Media y Baja frente a Alta.
+ *   MIN_TRUEQUE: minutos que cuesta cada entrega de un pedido entre mensajeros.
+ *   MARGEN_TRUEQUE_MIN: el trueque debe ahorrar al menos esto frente a la mejor opción directa.
+ *   BAL_TOL: se balancea si la ruta más larga de la ciudad supera en más de este % a la más corta (0,2 = 20 %).
+ *   BAL_MAX_EXTRA_MIN: minutos de trabajo total extra que se aceptan siempre por cada pedido que se mueve para balancear.
+ *   ZONAS_ESTRICTAS: cada conductor trabaja en su zona. Si la tienda y el cliente están en zonas distintas, el de la
+ *     tienda recoge y el de la zona del cliente entrega, con trueque en el punto de encuentro (aunque en minutos totales
+ *     saliera más barato que uno solo cruzara la ciudad). Nadie va a recoger a la zona de otro. Sin punto de encuentro
+ *     para esa ciudad, o con prioridad Alta, entrega directo el conductor de la tienda.
+ *   BAL_RATIO: además se acepta un extra de hasta BAL_RATIO × lo que baja la ruta más larga
+ *     (p. ej. con 2: un conductor con 4 h y otro libre, pasarle un pedido aunque cueste 80 min más si el primero termina 40 min antes).
+ *   El costo de una opción es lo que crece la ruta simulada del mensajero (minutos) + 3 × los minutos de retraso que cause.
+ *   REGRESO_BASE: para comparar opciones se cuenta el regreso del mensajero a su zona al final (no cambia las horas que se muestran).
+ */
+const RUTA = { VEL_KMH: 18, FACTOR: 1.35, MIN_PARADA: 6, PEN_PRIORIDAD: { Alta: 0, Media: 15, Baja: 30 }, MISMO_PUNTO_KM: 0.12,
+  MIN_TRUEQUE: 5, MARGEN_TRUEQUE_MIN: 8, BAL_TOL: 0.2, BAL_MAX_EXTRA_MIN: 25, BAL_RATIO: 2, ZONAS_ESTRICTAS: true, ITER_TRUEQUE: 3, REGRESO_BASE: true,
+  CENTRO: { 'bogota': { lat: 4.6533, lng: -74.0836 }, 'medellin': { lat: 6.2442, lng: -75.5812 } } };
+
+function kmEntre_(a, b) {
+  const R = 6371, r = Math.PI / 180;
+  const x = Math.pow(Math.sin((b.lat - a.lat) * r / 2), 2) + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.pow(Math.sin((b.lng - a.lng) * r / 2), 2);
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+/** Ciudad comparable: "BOGOTÁ D.C.", "Bogota, D.C." y "Bogotá" son la misma. */
+function ciudadN_(s) { return String(s || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/,?\s*d\.?\s*c\.?$/, '').replace(/[^a-z]/g, ''); }
+function minViaje_(a, b) { return a && b ? kmEntre_(a, b) * RUTA.FACTOR / RUTA.VEL_KMH * 60 : 0; }
+
+/** Punto dentro de polígono (polígono = [[lat, lng], …]). */
+function puntoEnPoligono_(lat, lng, poli) {
+  let dentro = false;
+  for (let i = 0, j = poli.length - 1; i < poli.length; j = i++) {
+    const yi = poli[i][0], xi = poli[i][1], yj = poli[j][0], xj = poli[j][1];
+    if (((yi > lat) !== (yj > lat)) && (lng < (xj - xi) * (lat - yi) / ((yj - yi) || 1e-12) + xi)) dentro = !dentro;
+  }
+  return dentro;
+}
+function centroide_(poli) {
+  let la = 0, ln = 0; poli.forEach(p => { la += p[0]; ln += p[1]; });
+  return { lat: la / poli.length, lng: ln / poli.length };
+}
+/** Zona que contiene el punto. Si ninguna lo contiene, la más cercana (fuera = true). */
+function zonaDePunto_(zonas, ciudad, lat, lng) {
+  const zs = zonas.filter(z => !ciudad || ciudadN_(z.ciudad) === ciudadN_(ciudad));
+  if (!zs.length) return null;
+  for (let i = 0; i < zs.length; i++) if (puntoEnPoligono_(lat, lng, zs[i].poligono)) return { nombre: zs[i].nombre, mensajero: zs[i].mensajero, fuera: false };
+  let mejor = null, dmin = Infinity;
+  zs.forEach(z => {
+    // distancia al vértice o al centro más cercano de la zona
+    const cands = z.poligono.map(p => ({ lat: p[0], lng: p[1] })).concat([centroide_(z.poligono)]);
+    cands.forEach(c => { const d = kmEntre_({ lat, lng }, c); if (d < dmin) { dmin = d; mejor = z; } });
+  });
+  return { nombre: mejor.nombre, mensajero: mejor.mensajero, fuera: true };
+}
+
+function hhmmMin_(m) { if (m === null || m === undefined || !isFinite(m)) return ''; m = Math.round(m); if (m >= 1440) m = 1439; return ('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + (m % 60)).slice(-2); }
+function minDeHora_(h) { const m = String(h || '').match(/^(\d{1,2}):(\d{2})/); return m ? Number(m[1]) * 60 + Number(m[2]) : null; }
+
+/**
+ * Motor de ruteo.
+ * entrada = {
+ *   ahoraMin: minuto del día desde el que se planifica,
+ *   asignar: true = "Generar ruteo" (reasigna pedidos Pendientes no manuales) · false = solo calcula rutas y horas con lo asignado,
+ *   pedidos: [{ id, ciudad, prio, desde, hasta (minutos o null), t:{lat,lng}|null (tienda), d:{lat,lng}|null (cliente),
+ *               estado, intermunicipal, A, B (nombres), fijo (asignación manual), punto (nombre), horaTrueque (min o null), tienda, cliente }],
+ *   mensajeros: [{ nombre, ciudad, inicio:{lat,lng}|null, hora0 (min) }],
+ *   zonas: [{ nombre, ciudad, mensajero, poligono }],
+ *   puntos: [{ nombre, ciudad, lat, lng, zonas:[nombres] }]
+ * }
+ * salida = { pedidos: { id: {A, B, modalidad, punto, horaTrueque, orden, etaR, etaE, motivo, zonaO, zonaD, riesgo} },
+ *            rutas: { nombre: {ciudad, inicio, hora0, fin, carga, paradas:[{n, lat, lng, eta, items:[{id, tipo}]}]} }, avisos: [] }
+ */
+function motorRuteo_(E) {
+  const avisos = [];
+  const N = (s) => normalizar_(s);
+  const ahora = E.ahoraMin || 0;
+
+  // ── Mensajeros y su punto de partida
+  const drv = {};
+  (E.mensajeros || []).forEach(m => {
+    const zonasM = (E.zonas || []).filter(z => N(z.mensajero) === N(m.nombre));
+    const base = m.inicio || (zonasM.length ? centroide_(zonasM[0].poligono) : (RUTA.CENTRO[ciudadN_(m.ciudad)] || null));
+    drv[N(m.nombre)] = { nombre: m.nombre, ciudad: m.ciudad || (zonasM[0] && zonasM[0].ciudad) || '', base, hora0: Math.max(ahora, m.hora0 || 0), st: [], c: null };
+  });
+  const D = (nombre) => nombre ? drv[N(nombre)] || null : null;
+  const delaCiudad = (ciudad) => Object.keys(drv).map(k => drv[k]).filter(d => ciudadN_(d.ciudad) === ciudadN_(ciudad));
+  const drvZona = (z, ciudad, punto) => {
+    if (z && z.mensajero && D(z.mensajero) && ciudadN_(D(z.mensajero).ciudad) === ciudadN_(ciudad)) return D(z.mensajero);
+    // zona sin mensajero: el mensajero de la ciudad cuya base está más cerca
+    let mejor = null, dm = Infinity;
+    delaCiudad(ciudad).forEach(d => { if (!d.base || !punto) return; const x = kmEntre_(d.base, punto); if (x < dm) { dm = x; mejor = d; } });
+    return mejor;
+  };
+
+  // ── Costo de la ruta de un mensajero = minutos de recorrido + 3 × minutos de retraso sobre la hora límite
+  const costoRuta = (d, extra) => { const r = recorrido_(d, extra ? d.st.concat(extra) : d.st); return { dur: r.fin - d.hora0, costo: (r.fin - d.hora0) + r.regreso + 3 * r.tarde }; };
+  const actual = (d) => { if (!d.c) d.c = costoRuta(d); return d.c; };
+  const delta = (d, extra) => costoRuta(d, extra).costo - actual(d).costo;
+  const poner = (d, extra) => { d.st = d.st.concat(extra); d.c = null; };
+  const quitar = (d, id) => { d.st = d.st.filter(x => x.s.id !== id); d.c = null; };
+  // Paradas de cada rol (en la planeación las de trueque no tienen hora: se sincronizan al final)
+  const stR = (p) => ({ key: p.id + '|R', tipo: 'R', lat: p.t.lat, lng: p.t.lng, desde: null, sig: p.d, s: p, prio: p.prio, hasta: p.hasta });
+  const stE = (p, req) => ({ key: p.id + '|E', tipo: 'E', lat: p.d.lat, lng: p.d.lng, desde: p.desde, requiere: req, s: p, prio: p.prio, hasta: p.hasta });
+  const stT = (p, q, req) => ({ key: p.id + '|T', tipo: 'T', lat: q.lat, lng: q.lng, desde: null, requiere: req, sig: p.d, s: p, prio: p.prio, hasta: p.hasta });
+  const stB = (p, q) => ({ key: p.id + '|B', tipo: 'B', lat: q.lat, lng: q.lng, desde: null, sig: p.d, s: p, prio: p.prio, hasta: p.hasta });
+  const directo = (p, needR) => (needR === false ? [] : [stR(p)]).concat([stE(p, needR === false ? null : p.id + '|R')]);
+
+  // ── Preparación de pedidos
+  const out = {};
+  const ps = (E.pedidos || []).filter(p => ABIERTOS.indexOf(p.estado || 'Pendiente') >= 0).map(p => {
+    const zo = p.t ? zonaDePunto_(E.zonas || [], p.ciudad, p.t.lat, p.t.lng) : null;
+    const zd = p.d ? zonaDePunto_(E.zonas || [], p.ciudad, p.d.lat, p.d.lng) : null;
+    const x = Object.assign({}, p, { zo, zd, prio: p.prio || 'Media' });
+    out[p.id] = { A: p.A || '', B: p.B || '', modalidad: '', punto: p.punto || '', horaTrueque: p.horaTrueque, orden: null, etaR: null, etaE: null,
+                  motivo: '', zonaO: zo ? zo.nombre + (zo.fuera ? ' (fuera)' : '') : '', zonaD: zd ? zd.nombre + (zd.fuera ? ' (fuera)' : '') : '', riesgo: false };
+    return x;
+  });
+  const reasignable = (p) => E.asignar && !p.fijo && (p.estado || 'Pendiente') === 'Pendiente' && !p.intermunicipal;
+  const puntoPorNombre = (nombre, ciudad) => { const l = (E.puntos || []).filter(q => N(q.nombre) === N(nombre));
+    return l.filter(q => !ciudad || ciudadN_(q.ciudad) === ciudadN_(ciudad))[0] || l[0] || null; };
+  /** Mejor punto de encuentro para un trueque que no lo tiene: el que menos desvía tienda → punto → cliente. */
+  const mejorPunto = (p) => { let m = null, c = Infinity;
+    puntosPara(p).lista.forEach(q => { const x = (p.t ? minViaje_(p.t, q) : 0) + (p.d ? minViaje_(q, p.d) : 0); if (x < c){ c = x; m = q; } });
+    return m; };
+  const esTrueque = (o) => o.B && N(o.B) !== N(o.A);
+  const puntosPara = (p) => {   // puntos de encuentro válidos para el par de zonas; si no hay, todos los de la ciudad
+    const zo = p.zo ? N(p.zo.nombre) : '', zd = p.zd ? N(p.zd.nombre) : '';
+    const deCiudad = (E.puntos || []).filter(q => ciudadN_(q.ciudad) === ciudadN_(p.ciudad));
+    const propios = deCiudad.filter(q => !q.zonas.length || (q.zonas.map(N).indexOf(zo) >= 0 && q.zonas.map(N).indexOf(zd) >= 0));
+    return propios.length ? { lista: propios, alterno: false } : { lista: deCiudad, alterno: true };
+  };
+
+  // 1) Pedidos que se conservan como están (manuales, ya iniciados, o solo cálculo de rutas)
+  const libres = [];
+  ps.forEach(p => {
+    const o = out[p.id];
+    if (reasignable(p)) { libres.push(p); return; }
+    if (p.intermunicipal && !p.A) { o.modalidad = 'Intermunicipal'; avisos.push({ tipo: 'intermunicipal', id: p.id, txt: 'Intermunicipal: asigna el mensajero a mano' }); return; }
+    if (!o.A) {
+      if (!p.t || !p.d) avisos.push({ tipo: 'sinUbic', id: p.id, txt: !p.t ? 'Tienda sin ubicación' : 'Dirección del cliente sin ubicar' });
+      else avisos.push({ tipo: 'sinAsignar', id: p.id, txt: 'Sin mensajero' });
+      return;
+    }
+    o.modalidad = p.intermunicipal ? 'Intermunicipal' : esTrueque(o) ? 'Trueque' : 'Directo';
+    o.motivo = p.fijo ? 'Asignación manual' : (p.estado !== 'Pendiente' ? 'En curso: se conserva' : '');
+    const a = D(o.A);
+    if (!a) { avisos.push({ tipo: 'mensajero', id: p.id, txt: 'El mensajero "' + o.A + '" no existe o está inactivo' }); return; }
+    // Trueque puesto a mano sin punto de encuentro (o con uno que no existe): se propone el mejor punto
+    if (esTrueque(o) && !puntoPorNombre(o.punto, p.ciudad)) {
+      const q = mejorPunto(p);
+      if (q) { avisos.push({ tipo: 'punto', id: p.id, txt: (o.punto ? 'El punto "' + o.punto + '" no existe' : 'Trueque sin punto de encuentro') + ': se usa "' + q.nombre + '"' }); o.punto = q.nombre; o.puntoAuto = true; }
+      else avisos.push({ tipo: 'punto', id: p.id, txt: 'Trueque sin punto de encuentro: no hay puntos en ' + p.ciudad });
+    }
+    if (!E.asignar) return;   // en solo cálculo no se arma la carga (las rutas se simulan al final)
+    const est = p.estado || 'Pendiente', needR = est === 'Pendiente' || est === 'Aceptado';
+    if (esTrueque(o)) {
+      const q = puntoPorNombre(o.punto, p.ciudad), b = D(o.B);
+      if (!q || !b) { avisos.push({ tipo: 'punto', id: p.id, txt: !b ? 'El conductor de entrega "' + o.B + '" no existe o está inactivo' : 'Trueque sin punto de encuentro' }); return; }
+      if (needR && p.t) poner(a, [stR(p)]);
+      if (p.d && (needR || est === 'Recogido')) poner(a, [stT(p, q, needR ? p.id + '|R' : null)]);
+      if (p.d) poner(b, est === 'Recibido' ? [stE(p, null)] : [stB(p, q), stE(p, p.id + '|B')]);
+    } else if (p.d) poner(a, needR && p.t ? directo(p) : directo(p, false));
+  });
+
+  // 2) Asignación automática por costo marginal real: se simula la ruta con y sin el pedido
+  const prioR = { Alta: 0, Media: 1, Baja: 2 };
+  libres.forEach(p => { p._A = p.t ? drvZona(p.zo, p.ciudad, p.t) : null; p._B = p.d ? drvZona(p.zd, p.ciudad, p.d) : null; });
+  libres.sort((x, y) => ((x._A === x._B) ? 0 : 1) - ((y._A === y._B) ? 0 : 1) || (prioR[x.prio] - prioR[y.prio]) || ((x.hasta || 1e4) - (y.hasta || 1e4)));
+  const r = (x) => Math.round(x);
+  /** Opciones de un pedido. candidatos = mensajeros que pueden hacer el directo; trueques entre (de, a). */
+  const opcionesDe = (p, directos, pares) => {
+    const ops = [];
+    directos.forEach(X => { if (X) ops.push({ m: 'D', X, costo: delta(X, directo(p)) }); });
+    if (p.prio !== 'Alta') pares.forEach(([A, B]) => {
+      if (!A || !B || A === B) return;
+      const pp = puntosPara(p);
+      pp.lista.forEach(q => {
+        const ca = delta(A, [stR(p), stT(p, q, p.id + '|R')]), cb = delta(B, [stB(p, q), stE(p, p.id + '|B')]);
+        ops.push({ m: 'T', A, B, q, alterno: pp.alterno, ca, cb, costo: ca + cb + RUTA.MIN_TRUEQUE });
+      });
+    });
+    return ops;
+  };
+  const aplicar = (p, op, motivo) => {
+    const o = out[p.id];
+    if (op.m === 'D') { o.A = op.X.nombre; o.B = ''; o.punto = ''; o.modalidad = 'Directo'; poner(op.X, directo(p)); }
+    else { o.A = op.A.nombre; o.B = op.B.nombre; o.punto = op.q.nombre; o.modalidad = 'Trueque'; poner(op.A, [stR(p), stT(p, op.q, p.id + '|R')]); poner(op.B, [stB(p, op.q), stE(p, p.id + '|B')]); }
+    o.motivo = motivo; p._op = op;
+  };
+  const motivoDe = (p, op, mejorDirecto, hayTrueque) => op.m === 'T'
+    ? 'Trueque en ' + op.q.nombre + ': +' + r(op.costo) + ' min vs directo +' + r(mejorDirecto.costo) + ' min' + (op.alterno ? ' (punto más cercano: el par de zonas no tiene punto propio)' : '')
+    : (op.X === p._A && op.X === p._B ? 'Directo: tienda y cliente en la zona de ' + op.X.nombre
+      : op.X === p._A ? 'Directo: ' + op.X.nombre + ' recoge y entrega' : 'Directo: ' + op.X.nombre + ' (zona del cliente) recoge en tienda') +
+      ' · +' + r(op.costo) + ' min' + (hayTrueque ? ' (trueque no conviene)' : p.prio === 'Alta' && p._A !== p._B ? ' · urgente, sin trueque' : '');
+  const validos = libres.filter(p => {
+    const o = out[p.id];
+    o.A = ''; o.B = ''; o.punto = ''; o.horaTrueque = null; o.modalidad = '';
+    if (!p.t || !p.d) { avisos.push({ tipo: 'sinUbic', id: p.id, txt: !p.t ? 'Tienda sin ubicación' : 'Dirección del cliente sin ubicar' }); return false; }
+    if (!p._A && !p._B) { avisos.push({ tipo: 'sinMensajero', id: p.id, txt: 'No hay mensajeros en ' + p.ciudad }); return false; }
+    return true;
+  });
+  const cruzado = (p) => p._A && p._B && p._A !== p._B;
+  const individual = (p) => {
+    // con zonas estrictas, el directo de un pedido entre zonas lo hace el conductor de la tienda (nadie va a recoger a otra zona)
+    const dirsPos = p._A === p._B ? [p._A || p._B] : (RUTA.ZONAS_ESTRICTAS && cruzado(p) ? [p._A] : [p._A, p._B]);
+    const ops = opcionesDe(p, dirsPos, [[p._A, p._B]]);
+    const dirs = ops.filter(x => x.m === 'D').sort((x, y) => x.costo - y.costo), tqs = ops.filter(x => x.m === 'T').sort((x, y) => x.costo - y.costo);
+    const elegido = tqs.length && (RUTA.ZONAS_ESTRICTAS || tqs[0].costo + RUTA.MARGEN_TRUEQUE_MIN < dirs[0].costo) ? tqs[0] : dirs[0];
+    aplicar(p, elegido, elegido.m === 'T' && RUTA.ZONAS_ESTRICTAS
+      ? 'Trueque por zonas en ' + elegido.q.nombre + ': ' + elegido.A.nombre + ' recoge en su zona y ' + elegido.B.nombre + ' entrega en la suya' + (elegido.alterno ? ' (punto más cercano: el par de zonas no tiene punto propio)' : '')
+      : motivoDe(p, elegido, dirs[0], tqs.length > 0));
+  };
+  // 2a) Misma zona
+  validos.filter(p => !p._A || !p._B || p._A === p._B).forEach(individual);
+  // 2b) Entre zonas, en grupo: los pedidos de la zona X a la zona Y comparten el viaje al punto de encuentro.
+  //     Se compara "todos por trueque en el mismo punto" contra "cada uno directo" (lo mejor de A o de B).
+  const cruzados = validos.filter(p => p._A && p._B && p._A !== p._B);
+  const grupos = {};
+  cruzados.filter(p => p.prio !== 'Alta').forEach(p => { const k = N(p._A.nombre) + '>' + N(p._B.nombre); (grupos[k] = grupos[k] || []).push(p); });
+  const enGrupo = {};
+  Object.keys(grupos).forEach(k => {
+    const g = grupos[k]; if (g.length < 2) return;
+    const A = g[0]._A, B = g[0]._B;
+    const dA = delta(A, [].concat.apply([], g.map(p => directo(p)))), dB = delta(B, [].concat.apply([], g.map(p => directo(p))));
+    const sueltos = g.reduce((a, p) => a + Math.min(delta(A, directo(p)), delta(B, directo(p))), 0);
+    const mejorDir = Math.min(dA, dB, sueltos);
+    let mejorTq = null;
+    puntosPara(g[0]).lista.forEach(q => {
+      const ca = delta(A, [].concat.apply([], g.map(p => [stR(p), stT(p, q, p.id + '|R')])));
+      const cb = delta(B, [].concat.apply([], g.map(p => [stB(p, q), stE(p, p.id + '|B')])));
+      const costo = ca + cb + RUTA.MIN_TRUEQUE * g.length;
+      if (!mejorTq || costo < mejorTq.costo) mejorTq = { q, costo, alterno: puntosPara(g[0]).alterno };
+    });
+    if (mejorTq && (RUTA.ZONAS_ESTRICTAS || mejorTq.costo + RUTA.MARGEN_TRUEQUE_MIN < mejorDir)) {
+      g.forEach(p => {
+        aplicar(p, { m: 'T', A, B, q: mejorTq.q }, '');
+        out[p.id].motivo = 'Trueque en grupo (' + g.length + ' pedidos ' + (p.zo ? p.zo.nombre : '') + ' → ' + (p.zd ? p.zd.nombre : '') + ') en ' + mejorTq.q.nombre +
+          ': +' + r(mejorTq.costo) + ' min vs directos +' + r(mejorDir) + ' min' + (mejorTq.alterno ? ' (punto más cercano: el par de zonas no tiene punto propio)' : '');
+        enGrupo[p.id] = true;
+      });
+    }
+  });
+  // 2c) Los demás entre zonas, uno a uno (urgentes primero)
+  cruzados.filter(p => !enGrupo[p.id]).forEach(individual);
+
+  // 3) Balanceo: el mensajero con la ruta más larga de cada ciudad cede pedidos mientras baje la ruta más larga
+  if (E.asignar) {
+    for (let it = 0; it < 60; it++) {
+      let movido = false;
+      const ciudades = {}; Object.keys(drv).forEach(k => { ciudades[ciudadN_(drv[k].ciudad)] = true; });
+      Object.keys(ciudades).forEach(c => {
+        const ds = delaCiudad(c); if (ds.length < 2) return;
+        const dur = (d) => actual(d).dur;
+        ds.sort((x, y) => dur(y) - dur(x));
+        const alto = ds[0], maxAntes = dur(alto);
+        if (maxAntes <= dur(ds[ds.length - 1]) * (1 + RUTA.BAL_TOL)) return;
+        let mejor = null;
+        libres.forEach(p => {
+          const o = out[p.id];
+          if (!o.A || !p._op) return;
+          const involucra = N(o.A) === N(alto.nombre) || N(o.B) === N(alto.nombre);
+          if (!involucra) return;
+          // costo actual del pedido en su(s) ruta(s)
+          const viejos = o.modalidad === 'Trueque' ? [D(o.A), D(o.B)] : [D(o.A)];
+          const sinEl = viejos.map(d => { const st = d.st.filter(x => x.s.id !== p.id); const rr = recorrido_(d, st); return { d, dur: rr.fin - d.hora0, costo: rr.fin - d.hora0 + rr.regreso + 3 * rr.tarde }; });
+
+          const otros = ds.filter(d => d !== alto);
+          const alts = [];
+          otros.forEach(Y => { if (!RUTA.ZONAS_ESTRICTAS || Y === p._A || !p._A) alts.push({ m: 'D', X: Y }); });
+          if (p.prio !== 'Alta' && !RUTA.ZONAS_ESTRICTAS) otros.forEach(Y => { if (N(o.A) === N(alto.nombre) && Y !== D(o.A)) puntosPara(p).lista.forEach(q => alts.push({ m: 'T', A: D(o.A), B: Y, q, alterno: puntosPara(p).alterno })); });
+          alts.forEach(op => {
+            // duración de cada mensajero de la ciudad tras el cambio
+            const durs = {}, costos = {};
+            ds.forEach(d => { const s = sinEl.find(x => x.d === d); durs[N(d.nombre)] = s ? s.dur : dur(d); costos[N(d.nombre)] = s ? s.costo : actual(d).costo; });
+            const add = (d, st) => { const base = d.st.filter(x => x.s.id !== p.id).concat(st); const rr = recorrido_(d, base); durs[N(d.nombre)] = rr.fin - d.hora0; costos[N(d.nombre)] = rr.fin - d.hora0 + rr.regreso + 3 * rr.tarde; };
+            if (op.m === 'D') add(op.X, directo(p)); else { add(op.A, [stR(p), stT(p, op.q, p.id + '|R')]); add(op.B, [stB(p, op.q), stE(p, p.id + '|B')]); }
+            const maxDesp = Math.max.apply(null, Object.keys(durs).map(k => durs[k]));
+            const extra = Object.keys(costos).reduce((a, k) => a + costos[k], 0) - ds.reduce((a, d) => a + actual(d).costo, 0) + (op.m === 'T' ? RUTA.MIN_TRUEQUE : 0);
+            // se acepta si el extra es pequeño, o si la ruta más larga baja al menos tanto como cuesta el cambio
+            const tope = Math.max(RUTA.BAL_MAX_EXTRA_MIN, (maxAntes - maxDesp) * RUTA.BAL_RATIO);
+            if (maxDesp < maxAntes - 3 && extra <= tope && (!mejor || maxDesp < mejor.maxDesp - 0.5 || (Math.abs(maxDesp - mejor.maxDesp) <= 0.5 && extra < mejor.extra)))
+              mejor = { p, op, maxDesp, extra, viejos };
+          });
+        });
+        // En grupo: los pedidos del más cargado cuyo cliente está en la zona de otro conductor pasan juntos a ese conductor
+        // (un solo viaje a la tienda para varios pedidos; uno por uno nunca compensa el desplazamiento)
+        let grupo = null;
+        if (!RUTA.ZONAS_ESTRICTAS) ds.filter(Y => Y !== alto).forEach(Y => {
+          const G = libres.filter(p => { const o = out[p.id]; return p._op && o.A && N(o.A) === N(alto.nombre) && !esTrueque(o) && p._B === Y; });
+          if (G.length < 2) return;
+          const ids = {}; G.forEach(p => { ids[p.id] = true; });
+          const ra = recorrido_(alto, alto.st.filter(x => !ids[x.s.id])), ry = recorrido_(Y, Y.st.concat([].concat.apply([], G.map(p => directo(p)))));
+          const durs = {}, costos = {};
+          ds.forEach(d => { durs[N(d.nombre)] = dur(d); costos[N(d.nombre)] = actual(d).costo; });
+          durs[N(alto.nombre)] = ra.fin - alto.hora0; costos[N(alto.nombre)] = ra.fin - alto.hora0 + ra.regreso + 3 * ra.tarde;
+          durs[N(Y.nombre)] = ry.fin - Y.hora0; costos[N(Y.nombre)] = ry.fin - Y.hora0 + ry.regreso + 3 * ry.tarde;
+          const maxDesp = Math.max.apply(null, Object.keys(durs).map(k => durs[k]));
+          const extra = Object.keys(costos).reduce((x, k) => x + costos[k], 0) - ds.reduce((x, d) => x + actual(d).costo, 0);
+          const tope = Math.max(RUTA.BAL_MAX_EXTRA_MIN * G.length, (maxAntes - maxDesp) * RUTA.BAL_RATIO);
+          if (maxDesp < maxAntes - 3 && extra <= tope && (!grupo || maxDesp < grupo.maxDesp)) grupo = { G, Y, maxDesp, extra };
+        });
+        if (grupo && (!mejor || grupo.maxDesp < mejor.maxDesp - 0.5)) {
+          grupo.G.forEach(p => quitar(alto, p.id));
+          grupo.G.forEach(p => {
+            aplicar(p, { m: 'D', X: grupo.Y }, '');
+            out[p.id].motivo = 'Balanceo por zona: ' + alto.nombre + ' ⇒ ' + grupo.Y.nombre + ' (cliente en su zona; pasan ' + grupo.G.length + ' pedidos juntos)' +
+              ' · ruta más larga de ' + r(maxAntes) + ' a ' + r(grupo.maxDesp) + ' min (' + (grupo.extra >= 0 ? '+' : '') + r(grupo.extra) + ' min en total)';
+          });
+          movido = true;
+          return;
+        }
+        if (mejor) {
+          const o = out[mejor.p.id], antes = o.A + (o.B ? ' → ' + o.B : '');
+          mejor.viejos.forEach(d => quitar(d, mejor.p.id));
+          aplicar(mejor.p, mejor.op, '');
+          o.motivo = 'Balanceo de carga: ' + antes + ' ⇒ ' + (mejor.op.m === 'T' ? o.A + ' → ' + o.B + ' (trueque en ' + o.punto + ')' : o.A) +
+            ' · ruta más larga de ' + r(maxAntes) + ' a ' + r(mejor.maxDesp) + ' min (+' + Math.max(0, r(mejor.extra)) + ' min en total)';
+          movido = true;
+        }
+      });
+      if (!movido) break;
+    }
+  }
+  // 4) Rutas: orden de paradas, horas estimadas y hora de cada trueque
+  const fijarHora = !E.asignar;   // en solo cálculo, la hora de trueque publicada no se mueve
+  let rutas = simularRutas_(ps, out, drv, E, fijarHora);
+  if (E.asignar) {
+    // Trueque que no llega a tiempo: pasa a la mejor opción directa y se recalcula
+    let cambio = false;
+    libres.forEach(p => {
+      const o = out[p.id];
+      if (o.modalidad === 'Trueque' && p.hasta !== null && p.hasta !== undefined && o.etaE !== null && o.etaE > p.hasta) {
+        const a = D(o.A), b = D(o.B), eta = o.etaE;
+        quitar(a, p.id); quitar(b, p.id);
+        const X = RUTA.ZONAS_ESTRICTAS || delta(a, directo(p)) <= delta(b, directo(p)) ? a : b;   // con zonas estrictas, el de la tienda
+        poner(X, directo(p));
+        o.motivo = 'Directo por ' + X.nombre + ': el trueque no cumplía la hora límite (' + hhmmMin_(eta) + ' > ' + hhmmMin_(p.hasta) + ')';
+        o.A = X.nombre; o.B = ''; o.punto = ''; o.horaTrueque = null; o.modalidad = 'Directo'; cambio = true;
+      }
+    });
+    if (cambio) rutas = simularRutas_(ps, out, drv, E, false);
+  }
+  ps.forEach(p => {
+    const o = out[p.id];
+    o.riesgo = !!(p.hasta !== null && p.hasta !== undefined && o.etaE !== null && o.etaE > p.hasta);
+    if (o.riesgo) avisos.push({ tipo: 'tarde', id: p.id, txt: 'Entrega estimada ' + hhmmMin_(o.etaE) + ' después de la hora límite ' + hhmmMin_(p.hasta) });
+    if (p.zo && p.zo.fuera) avisos.push({ tipo: 'fueraZona', id: p.id, txt: 'Tienda fuera de las zonas dibujadas' });
+    if (p.zd && p.zd.fuera) avisos.push({ tipo: 'fueraZona', id: p.id, txt: 'Cliente fuera de las zonas dibujadas' });
+    delete o.costo;
+  });
+  return { pedidos: out, rutas, avisos };
+}
+
+/** Simula la ruta de cada mensajero (heurística voraz, misma lógica de la app) y escribe orden y horas en out. */
+function simularRutas_(ps, out, drv, E, fijarHora) {
+  const N = (s) => normalizar_(s);
+  const puntoDe = (o, ciudad) => { const l = (E.puntos || []).filter(q => N(q.nombre) === N(o.punto));
+    return l.filter(q => ciudadN_(q.ciudad) === ciudadN_(ciudad))[0] || l[0] || null; };
+  const trueques = ps.filter(p => { const o = out[p.id]; return o.A && o.B && N(o.B) !== N(o.A) && puntoDe(o, p.ciudad); });
+  // Hora de trueque: la publicada se respeta (fijarHora); la que falta se calcula iterando
+  const fija = {};
+  trueques.forEach(p => {
+    const o = out[p.id];
+    if (fijarHora && o.horaTrueque !== null && o.horaTrueque !== undefined) { fija[p.id] = true; o._hT = o.horaTrueque; } else o._hT = null;
+  });
+  let rutas = {};
+  // se itera hasta que las horas de encuentro no cambien (con muchos trueques entre los mismos conductores, unas mueven a otras)
+  const iter = trueques.some(p => !fija[p.id]) ? Math.max(RUTA.ITER_TRUEQUE, 15) : 1;
+  for (let k = 0; k < iter; k++) {
+    rutas = {};
+    Object.keys(drv).forEach(key => {
+      const d = drv[key];
+      const paradas = [];
+      ps.forEach(p => {
+        const o = out[p.id];
+        if (!o.A) return;
+        const est = p.estado || 'Pendiente';
+        const tq = o.B && N(o.B) !== N(o.A);
+        const pt = tq ? puntoDe(o, p.ciudad) : null;
+        const base = { s: p, prio: p.prio, hasta: p.hasta };
+        const needR = est === 'Pendiente' || est === 'Aceptado';
+        if (N(o.A) === key) {
+          if (needR && p.t) paradas.push(Object.assign({ key: p.id + '|R', tipo: 'R', lat: p.t.lat, lng: p.t.lng, desde: null, sig: tq && pt ? pt : p.d }, base));
+          if (tq && pt) { if (needR || est === 'Recogido') paradas.push(Object.assign({ key: p.id + '|T', tipo: 'T', lat: pt.lat, lng: pt.lng, desde: o._hT, requiere: needR ? p.id + '|R' : null, sig: p.d }, base)); }
+          else if (p.d) paradas.push(Object.assign({ key: p.id + '|E', tipo: 'E', lat: p.d.lat, lng: p.d.lng, desde: p.desde, requiere: needR && p.t ? p.id + '|R' : null }, base));
+        }
+        if (tq && pt && N(o.B) === key) {
+          const recibido = est === 'Recibido';
+          if (!recibido) paradas.push(Object.assign({ key: p.id + '|B', tipo: 'B', lat: pt.lat, lng: pt.lng, desde: o._hT, sig: p.d }, base));
+          if (p.d) paradas.push(Object.assign({ key: p.id + '|E', tipo: 'E', lat: p.d.lat, lng: p.d.lng, desde: p.desde, requiere: recibido ? null : p.id + '|B' }, base));
+        }
+      });
+      rutas[d.nombre] = recorrido_(d, paradas);
+    });
+    // ETA por pedido
+    ps.forEach(p => { const o = out[p.id]; o.etaR = null; o.etaE = null; o.orden = null; o._etaT = null; o._etaB = null; });
+    Object.keys(rutas).forEach(nombre => rutas[nombre].paradas.forEach(pa => pa.items.forEach(it => {
+      const o = out[it.id];
+      if (it.tipo === 'R') o.etaR = pa.eta;
+      if (it.tipo === 'E') o.etaE = pa.eta;
+      if (it.tipo === 'T') o._etaT = pa.llega;
+      if (it.tipo === 'B') o._etaB = pa.llega;
+      if ((it.tipo === 'R' || it.tipo === 'T' || (it.tipo === 'E' && N(nombre) === N(o.A))) && o.orden === null) o.orden = pa.n;
+    })));
+    if (k === iter - 1) break;   // la última simulación usa la hora que queda guardada
+    // hora de encuentro = cuando llegan ambos, redondeada a 5 min; nunca se adelanta (así converge)
+    let cambia = false;
+    trueques.forEach(p => {
+      if (fija[p.id]) return;
+      const o = out[p.id];
+      // primeras vueltas: la hora puede moverse en ambos sentidos; si no se estabiliza, solo se atrasa (así converge)
+      const h = Math.max(o._etaT || 0, o._etaB || 0, k >= 6 ? (o._hT || 0) : 0);
+      const nh = h ? Math.ceil(h / 5) * 5 : null;
+      if (nh !== o._hT) { o._hT = nh; cambia = true; }
+    });
+    if (!cambia && k > 0) break;
+  }
+  trueques.forEach(p => { const o = out[p.id]; o.horaTrueque = o._hT; delete o._hT; });
+  ps.forEach(p => { delete out[p.id]._etaT; delete out[p.id]._etaB; });
+  return rutas;
+}
+
+/** Recorrido voraz de un mensajero: va a la parada factible de menor costo (viaje + espera ×1,5 + prioridad − urgencia). */
+function recorrido_(d, paradasSueltas) {
+  let cur = d.base, t = d.hora0, tarde = 0;
+  const pend = paradasSueltas.slice(), hechas = {}, seq = [];
+  // Ruta dibujada con lápiz: las entregas con orden manual van en ese orden (cada una espera a la anterior)
+  const conOrden = pend.filter(p => p.tipo === 'E' && p.s && p.s.secManual).sort((a, b) => a.s.secManual - b.s.secManual);
+  conOrden.forEach((p, i) => { if (i > 0) p.tras = conOrden[i - 1].key; });
+  // Rutas del día: lo pendiente de una ruta anterior (Ruta 1) va antes que lo de la siguiente (Ruta 2); lo nuevo, al final
+  const rutaDe = (p) => (p.s && p.s.ruta) || 1e6;
+  let porRuta = true;
+  while (pend.length) {
+    let mejor = null;
+    const rMin = porRuta ? Math.min.apply(null, pend.map(rutaDe)) : 0;
+    pend.forEach((p, i) => {
+      if (porRuta && rutaDe(p) > rMin) return;
+      if (p.requiere && !hechas[p.requiere]) {
+        // la parada requerida no está en esta ruta (p. ej. la recogió otro): se permite
+        if (pend.some(x => x.key === p.requiere)) return;
+      }
+      if (p.tras && !hechas[p.tras] && pend.some(x => x.key === p.tras)) return;
+      const viaje = minViaje_(cur, p);
+      // otro paquete en el mismo sitio (p. ej. varios trueques en el mismo punto): un minuto más, no una parada nueva
+      const mismo = seq.length && cur && kmEntre_(cur, p) < RUTA.MISMO_PUNTO_KM;
+      const llega = mismo ? t - RUTA.MIN_PARADA + 1 : t + viaje;
+      const espera = (p.desde !== null && p.desde !== undefined && llega < p.desde) ? p.desde - llega : 0;
+      let costo = viaje + espera * 1.5 + (RUTA.PEN_PRIORIDAD[p.prio] !== undefined ? RUTA.PEN_PRIORIDAD[p.prio] : 15);
+      if (cur && kmEntre_(cur, p) < RUTA.MISMO_PUNTO_KM) costo -= 25;
+      if (p.hasta !== null && p.hasta !== undefined) {
+        const fin = p.tipo === 'E' ? llega + espera : llega + espera + RUTA.MIN_PARADA + minViaje_(p, p.sig);
+        const holgura = p.hasta - fin;
+        costo -= holgura < 0 ? 35 : holgura < 30 ? 22 : holgura < 60 ? 8 : 0;
+      }
+      if (p.tipo === 'T' || p.tipo === 'B') costo -= 10;   // el compañero cuenta con esa hora
+      if (p.tipo === 'E' && p.requiere) costo -= 4;
+      if (!mejor || costo < mejor.costo) mejor = { i, costo, llega, sale: llega + espera };
+    });
+    if (!mejor) { if (porRuta) { porRuta = false; continue; } break; }   // si el orden de rutas choca con otra regla, manda la otra regla
+    porRuta = true;
+    const p = pend.splice(mejor.i, 1)[0];
+    p.llega = mejor.llega; p.eta = mejor.sale; seq.push(p); hechas[p.key] = true;
+    if (p.tipo === 'E' && p.hasta !== null && p.hasta !== undefined && p.eta > p.hasta) tarde += p.eta - p.hasta;
+    t = mejor.sale + RUTA.MIN_PARADA; cur = p;
+  }
+  const paradas = [];
+  seq.forEach(p => {
+    const ult = paradas[paradas.length - 1];
+    if (ult && kmEntre_(ult, p) < RUTA.MISMO_PUNTO_KM) { ult.items.push({ id: p.s.id, tipo: p.tipo }); }   // hora y llegada = las del primer paquete en ese sitio
+    else paradas.push({ lat: p.lat, lng: p.lng, eta: p.eta, llega: p.llega, items: [{ id: p.s.id, tipo: p.tipo }] });
+  });
+  paradas.forEach((pa, i) => { pa.n = i + 1; });
+  const fin = seq.length ? seq[seq.length - 1].eta + RUTA.MIN_PARADA : d.hora0;
+  const regreso = seq.length && RUTA.REGRESO_BASE ? minViaje_(seq[seq.length - 1], d.base) : 0;
+  return { ciudad: d.ciudad, inicio: d.base, hora0: d.hora0, fin, carga: Math.round(fin - d.hora0), tarde, regreso, paradas };
+}
+// ==MOTOR-FIN==
+// Zonas de operación, copiadas de Code.gs
+const ZONAS_INICIALES = [
+  {"nombre":"ZONA 1","ciudad":"Bogotá","color":"#000000","poligono":[[4.682784,-74.121819],[4.651029,-74.10187],[4.637205,-74.093013],[4.63196,-74.084593],[4.612634,-74.070641],[4.609238,-74.066466],[4.605144,-74.064658],[4.603183,-74.062423],[4.580979,-74.054184],[4.674675,-74.019337],[4.690295,-74.019166],[4.710876,-74.012128],[4.74605,-73.998051],[4.774105,-74.011509],[4.788475,-74.035199],[4.782316,-74.058888],[4.757272,-74.134282],[4.718678,-74.167241]]},
+  {"nombre":"ZONA 2","ciudad":"Bogotá","color":"#FBC02D","poligono":[[4.601863,-74.060553],[4.60395,-74.06426],[4.609032,-74.066937],[4.615473,-74.07315],[4.627585,-74.081628],[4.632046,-74.08528],[4.637205,-74.093013],[4.681081,-74.121317],[4.685059,-74.125694],[4.718678,-74.167241],[4.696916,-74.189488],[4.663656,-74.218636],[4.640729,-74.235493],[4.573964,-74.279232],[4.468139,-74.088105],[4.580979,-74.054184]]},
+  {"nombre":"ZONA 3","ciudad":"Medellín","color":"#795548","poligono":[[6.287062,-75.624493],[6.300495,-75.636096],[6.302238,-75.652249],[6.29401,-75.66094],[6.270852,-75.657614],[6.229424,-75.639752],[6.213952,-75.617779],[6.210888,-75.598407],[6.201306,-75.583258],[6.194795,-75.571027],[6.181091,-75.537812],[6.192914,-75.534151],[6.203372,-75.532673],[6.212558,-75.528839],[6.22275,-75.526226],[6.239151,-75.523165],[6.24702,-75.535381],[6.252964,-75.554507],[6.25622,-75.565737],[6.25883,-75.575892],[6.259581,-75.582687],[6.263488,-75.586735],[6.270339,-75.593749],[6.272273,-75.595653],[6.274037,-75.599446],[6.27748,-75.606088]]},
+  {"nombre":"ZONA 4","ciudad":"Medellín","color":"#C2185B","poligono":[[6.293836,-75.523479],[6.31296,-75.519046],[6.349145,-75.474269],[6.375891,-75.490387],[6.371645,-75.570266],[6.365523,-75.58934],[6.336406,-75.594223],[6.31688,-75.6021],[6.30486,-75.619247],[6.300495,-75.636096],[6.287062,-75.624493],[6.272322,-75.595197],[6.259853,-75.582535],[6.257032,-75.568608],[6.246872,-75.534383],[6.239151,-75.523165],[6.26965,-75.522086],[6.280591,-75.522783]]},
+  {"nombre":"ZONA 5","ciudad":"Medellín","color":"#000000","poligono":[[6.213705,-75.616528],[6.219963,-75.62721],[6.229424,-75.639752],[6.217801,-75.642564],[6.208367,-75.655734],[6.199721,-75.676305],[6.165835,-75.666463],[6.144681,-75.658051],[6.128296,-75.651032],[6.12071,-75.644624],[6.092187,-75.647065],[6.077014,-75.645234],[6.071248,-75.631806],[6.077014,-75.619904],[6.110393,-75.623566],[6.124048,-75.620515],[6.132848,-75.606782],[6.130837,-75.596816],[6.137096,-75.578401],[6.161976,-75.553071],[6.181091,-75.537812],[6.192932,-75.567254],[6.197718,-75.576624],[6.202104,-75.584612],[6.206917,-75.592429],[6.210888,-75.598407]]}
+];
+let DEMO_DB = null;
+function demoInit(){
+  const hoy = hoyTxt(), m = ahoraMin();
+  const rect = (la1, ln1, la2, ln2) => [[la1, ln1], [la1, ln2], [la2, ln2], [la2, ln1]];
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const tiendas = [
+    {codigo: 'B01', nombre: 'Tienda Demo Andino', ciudad: 'Bogotá', dir: 'Carrera 11 # 82-71', lat: 4.7300, lng: -74.0450},
+    {codigo: 'B02', nombre: 'Tienda Demo Américas', ciudad: 'Bogotá', dir: 'Avenida Américas # 68-94', lat: 4.6450, lng: -74.1150},
+    {codigo: 'M01', nombre: 'Tienda Demo Laureles', ciudad: 'Medellín', dir: 'Circular 1 # 70-01', lat: 6.2457, lng: -75.5854},
+    {codigo: 'M02', nombre: 'Tienda Demo El Tesoro', ciudad: 'Medellín', dir: 'Carrera 25A # 1A Sur-45', lat: 6.1750, lng: -75.6000},
+    {codigo: 'M03', nombre: 'Tienda Demo Bello', ciudad: 'Medellín', dir: 'Diagonal 51 # 34-12', lat: 6.3200, lng: -75.5550}];
+  // Zonas reales de operación (BOGOTA.kmz y MEDELLIN.kmz), con un conductor de demo en cada una
+  const asignacion = {'ZONA 1': 'Andrés Demo', 'ZONA 2': 'Camilo Demo', 'ZONA 3': 'Diana Demo', 'ZONA 4': 'Esteban Demo', 'ZONA 5': 'Brayan Demo'};
+  const zonas = ZONAS_INICIALES.map(z => Object.assign({}, z, {mensajero: asignacion[z.nombre] || '', poligono: z.poligono.map(p => p.slice())}));
+  const puntos = [
+    {nombre: 'Punto Av. Boyacá', ciudad: 'Bogotá', dir: 'Av. Boyacá con Calle 26', lat: 4.6562, lng: -74.1033, zonas: ['ZONA 1', 'ZONA 2'], notas: 'Frente a la estación, costado norte'},
+    {nombre: 'Punto Estadio', ciudad: 'Medellín', dir: 'Estación Estadio', lat: 6.2600, lng: -75.5854, zonas: ['ZONA 3', 'ZONA 4'], notas: ''},
+    {nombre: 'Punto Aguacatala', ciudad: 'Medellín', dir: 'Estación Aguacatala', lat: 6.2075, lng: -75.5854, zonas: ['ZONA 3', 'ZONA 5'], notas: ''}];
+  const mensajeros = [
+    {nombre: 'Andrés Demo', ciudad: 'Bogotá', codigo: 'C01', telefono: '3000000001', vehiculo: 'Moto', enTurno: true, lat: 4.7280, lng: -74.0480},
+    {nombre: 'Camilo Demo', ciudad: 'Bogotá', codigo: 'C02', telefono: '3000000002', vehiculo: 'Moto', enTurno: true, lat: 4.6460, lng: -74.1140},
+    {nombre: 'Diana Demo', ciudad: 'Medellín', codigo: 'C03', telefono: '3000000003', vehiculo: 'Moto', enTurno: true, lat: 6.2440, lng: -75.5870},
+    {nombre: 'Esteban Demo', ciudad: 'Medellín', codigo: 'C04', telefono: '3000000004', vehiculo: 'Moto', enTurno: true, lat: 6.3180, lng: -75.5560},
+    {nombre: 'Brayan Demo', ciudad: 'Medellín', codigo: 'C05', telefono: '3000000005', vehiculo: 'Moto', enTurno: false}];
+  const nombres = ['Laura Gómez', 'Andrés Ruiz', 'Marcela Díaz', 'Jorge Pérez', 'Paula Ríos', 'Sofía León', 'Diego Mora', 'Ana Torres', 'Camila Vargas', 'Julián Castro', 'Natalia Rojas', 'Felipe Ortiz', 'Valentina Gil', 'Santiago Mejía', 'Daniela Cruz'];
+  const pedidos = [];
+  const hm = (x) => { x = Math.max(0, Math.min(1439, Math.round(x))); return String(Math.floor(x / 60)).padStart(2, '0') + ':' + String(x % 60).padStart(2, '0'); };
+  // Clientes dentro de la zona pedida (y de la caja indicada)
+  const enZona = (nz, la0, la1, ln0, ln1) => { const z = zonas.find(x => x.nombre === nz); for (let k = 0; k < 400; k++){ const a = la0 + rnd() * (la1 - la0), b = ln0 + rnd() * (ln1 - ln0); if (puntoEnPoligono_(a, b, z.poligono)) return [a, b]; } return [ (la0 + la1) / 2, (ln0 + ln1) / 2 ]; };
+  const T = (n) => tiendas.find(t => t.nombre === n);
+  const plan = [];
+  // Bogotá: Andino despacha en ZONA 1 (varios cerca del punto) y también al suroccidente lejano (candidatos a trueque)
+  for (let i = 0; i < 6; i++) plan.push([T('Tienda Demo Andino'), ...enZona('ZONA 1', 4.70, 4.78, -74.07, -74.02)]);
+  for (let i = 0; i < 5; i++) plan.push([T('Tienda Demo Andino'), ...enZona('ZONA 1', 4.655, 4.68, -74.105, -74.085)]);
+  for (let i = 0; i < 5; i++) plan.push([T('Tienda Demo Andino'), ...enZona('ZONA 2', 4.575, 4.605, -74.195, -74.165)]);
+  for (let i = 0; i < 8; i++) plan.push([T('Tienda Demo Américas'), ...enZona('ZONA 2', 4.57, 4.65, -74.20, -74.11)]);
+  // Medellín
+  for (let i = 0; i < 6; i++) plan.push([T('Tienda Demo Laureles'), ...enZona('ZONA 3', 6.22, 6.28, -75.62, -75.56)]);
+  for (let i = 0; i < 5; i++) plan.push([T('Tienda Demo El Tesoro'), ...enZona('ZONA 5', 6.13, 6.21, -75.64, -75.58)]);
+  for (let i = 0; i < 5; i++) plan.push([T('Tienda Demo Bello'), ...enZona('ZONA 4', 6.28, 6.35, -75.60, -75.53)]);
+  for (let i = 0; i < plan.length; i++){
+    const [t, lat, lng] = plan[i];
+    const prio = rnd() < .15 ? 'Alta' : rnd() < .75 ? 'Media' : 'Baja';
+    const desde = rnd() < .4 ? 540 + Math.floor(rnd() * 5) * 60 : null;
+    pedidos.push({id: 'CV' + String(101 + i).padStart(4, '0'), fecha: hoy, ciudad: t.ciudad, pedido: 'VEL-' + (20500 + i * 7), tienda: t.nombre, codigoTienda: t.codigo, dirTienda: t.dir, tipo: 'Entrega a domicilio',
+      cliente: nombres[i % nombres.length], telefono: '300' + String(1000000 + i * 12345).slice(0, 7), direccion: 'Calle ' + (10 + Math.floor(rnd() * 160)) + ' # ' + (5 + Math.floor(rnd() * 90)) + '-' + (10 + Math.floor(rnd() * 80)),
+      ciudadDestino: '', paquetes: String(1 + Math.floor(rnd() * 3)), descripcion: ['Bolso de cuero', 'Chaqueta', 'Billetera y cinturón', 'Morral', 'Maleta de viaje'][i % 5],
+      prioridad: prio, desde: desde ? hm(desde) : '', hasta: desde ? hm(desde + 180) : '18:00', indicaciones: i % 6 === 0 ? 'Llamar al llegar; portería no recibe.' : '',
+      A: '', B: '', publicado: false, modalidad: '', punto: '', horaTrueque: '', asignacion: '', motivoAsig: '', zonaO: '', zonaD: '',
+      latO: t.lat, lngO: t.lng, lat: +lat.toFixed(5), lng: +lng.toFixed(5), orden: null, etaR: '', etaE: '', estado: 'Pendiente',
+      hAceptado: '', hRecogido: '', hTransferido: '', hRecibido: '', hCierre: '', entregaTienda: '', recibe: '', observacion: '', motivoNovedad: '', conFotos: false, nFotos: {R: 0, T: 0, E: 0}});
+  }
+  pedidos.push(Object.assign({}, pedidos[3], {id: 'CV0141', pedido: 'VEL-20999', ciudadDestino: 'Medellín', direccion: 'Carrera 43A # 1-50, Medellín', lat: 6.2100, lng: -75.5700, modalidad: 'Intermunicipal'}));
+  DEMO_DB = {tiendas, zonas, puntos, mensajeros, pedidos};
+  // Simula un día en marcha: ruteo generado y publicado, con avances
+  demoGenerar(hoy, 'Todas'); pedidos.forEach(p => { if (p.A) p.publicado = true; });
+  let k = 0;
+  pedidos.filter(p => p.A).forEach(p => {
+    k++;
+    if (k % 5 === 0){ p.estado = 'Entregado'; p.hAceptado = hm(m - 150); p.hRecogido = hm(m - 120); if (p.modalidad === 'Trueque'){ p.hTransferido = hm(m - 90); p.hRecibido = hm(m - 88); } p.hCierre = hm(m - 60); p.recibe = p.cliente; p.entregaTienda = 'Caja'; p.conFotos = true; p.nFotos = {R: 1, T: p.modalidad === 'Trueque' ? 1 : 0, E: 1}; }
+    else if (k % 7 === 0){ p.estado = 'Novedad'; p.hAceptado = hm(m - 100); p.hRecogido = hm(m - 80); p.hCierre = hm(m - 30); p.motivoNovedad = 'Cliente ausente'; p.observacion = 'No contestó el teléfono'; p.conFotos = true; p.nFotos = {R: 1, T: 0, E: 1}; }
+    else if (k % 3 === 0){ p.estado = 'Recogido'; p.hAceptado = hm(m - 40); p.hRecogido = hm(m - 20); p.entregaTienda = 'Vendedor'; p.conFotos = true; p.nFotos = {R: 1, T: 0, E: 0}; }
+    else if (k % 2 === 0){ p.estado = 'Aceptado'; p.hAceptado = hm(m - 25); }
+  });
+  // Un trueque atrasado para ver la alerta
+  const tq = pedidos.find(p => p.modalidad === 'Trueque' && p.estado !== 'Entregado' && p.estado !== 'Novedad');
+  if (tq){ tq.estado = 'Recogido'; tq.hRecogido = hm(m - 70); tq.horaTrueque = hm(m - 45); }
+  // Lo ya asignado es la Ruta 1 (publicada): lo siguiente que se asigne será la Ruta 2
+  pedidos.forEach(p => { if (p.A) p.ruta = 1; });
+  DEMO_DB.rutaAb = {}; pedidos.forEach(p => { if (p.A) DEMO_DB.rutaAb[p.fecha + '|' + p.ciudad] = 2; });
+  // Llegan pedidos nuevos sin asignar
+  for (let i = 0; i < 3; i++){ const x = Object.assign({}, pedidos[i], {id: 'CV' + String(150 + i).padStart(4, '0'), pedido: 'VEL-' + (21500 + i), ruta: null, A: '', B: '', publicado: false, modalidad: '', punto: '', horaTrueque: '', asignacion: '', motivoAsig: '', estado: 'Pendiente', hAceptado: '', hRecogido: '', hTransferido: '', hRecibido: '', hCierre: '', conFotos: false, nFotos: {R: 0, T: 0, E: 0}}); pedidos.push(x); }
+  // Uno que Google no pudo ubicar (se ubica a mano desde la plataforma)
+  Object.assign(pedidos[pedidos.length - 1], {lat: null, lng: null, direccion: 'Vereda La Calera km 4 casa azul', sinUbic: 'Google no encontró la dirección'});
+}
+function demoEntrada(fecha, ciudad, asignar){
+  const DB = DEMO_DB, m = fecha === hoyTxt() ? ahoraMin() : 0;
+  const ps = DB.pedidos.filter(p => p.fecha === fecha && (ciudad === 'Todas' || p.ciudad === ciudad));
+  return {ps, E: {ahoraMin: m, asignar, zonas: DB.zonas, puntos: DB.puntos,
+    mensajeros: DB.mensajeros.filter(x => ciudad === 'Todas' || x.ciudad === ciudad).map(x => ({nombre: x.nombre, ciudad: x.ciudad, inicio: x.lat ? {lat: x.lat, lng: x.lng} : null, hora0: Math.max(m, 480)})),
+    pedidos: ps.map(p => ({id: p.id, ciudad: p.ciudad, prio: p.prioridad, desde: aMin(p.desde), hasta: aMin(p.hasta), t: {lat: p.latO, lng: p.lngO}, d: p.lat ? {lat: p.lat, lng: p.lng} : null,
+      estado: p.estado, intermunicipal: p.modalidad === 'Intermunicipal', A: p.A, B: p.B, fijo: p.asignacion === 'Manual', punto: p.punto, horaTrueque: aMin(p.horaTrueque), secManual: p.ordenManual || null}))}};
+}
+/* Demo de rutas del día: lo asignado toma la ruta abierta; publicar la cierra */
+const demoAbierta = (p) => { DEMO_DB.rutaAb = DEMO_DB.rutaAb || {}; return DEMO_DB.rutaAb[p.fecha + '|' + p.ciudad] || 1; };
+function demoMarcarRuta(p){ if (!p.A){ if (p.estado === 'Pendiente') p.ruta = null; return; } if (!p.ruta) p.ruta = demoAbierta(p); }
+function demoGenerar(fecha, ciudad){
+  const {ps, E} = demoEntrada(fecha, ciudad, true);
+  const R = motorRuteo_(E);
+  const res = {pedidos: 0, directos: 0, trueques: 0, cambios: 0, intermunicipales: 0, sinAsignar: 0};
+  ps.forEach(p => {
+    const o = R.pedidos[p.id]; if (!o) return; res.pedidos++;
+    if (p.publicado && !p._resp) p._resp = {A: p.A, B: p.B, punto: p.punto, horaTrueque: p.horaTrueque, modalidad: p.modalidad, ruta: p.ruta, orden: p.orden, publicado: true};
+    const reasig = p.asignacion !== 'Manual' && p.estado === 'Pendiente' && o.modalidad !== 'Intermunicipal';
+    if (reasig){
+      const antes = [p.A, p.B, p.punto].join('|');
+      p.A = o.A; p.B = o.modalidad === 'Trueque' ? o.B : ''; p.punto = o.modalidad === 'Trueque' ? o.punto : ''; p.asignacion = o.A ? 'Auto' : '';
+      if ([p.A, p.B, p.punto].join('|') !== antes){ p.publicado = false; res.cambios++; }
+      p.horaTrueque = o.modalidad === 'Trueque' ? hhmmMin_(o.horaTrueque) : '';
+      p.motivoAsig = o.motivo;
+    }
+    demoMarcarRuta(p);
+    if (o.modalidad) p.modalidad = o.modalidad;
+    p.zonaO = o.zonaO; p.zonaD = o.zonaD; p.etaR = hhmmMin_(o.etaR); p.etaE = hhmmMin_(o.etaE); p.orden = o.orden;
+    if (o.modalidad === 'Trueque') res.trueques++; else if (o.modalidad === 'Directo') res.directos++; else if (o.modalidad === 'Intermunicipal') res.intermunicipales++;
+    if (!o.A && o.modalidad !== 'Intermunicipal') res.sinAsignar++;
+  });
+  return {resumen: res, avisos: R.avisos};
+}
+function demoApi(accion, d){
+  return new Promise((ok, mal) => setTimeout(() => {
+    try {
+      if (!DEMO_DB) demoInit();
+      const DB = DEMO_DB, err = (t) => mal(new Error(t));
+      const usuarios = {OPERACION: {nombre: 'Coordinación Quick (demo)', perfil: 'Operación'}, VELEZ: {nombre: 'Cueros Vélez (demo)', perfil: 'Cliente'}};
+      const ses = S.ses || {};
+      if (accion !== 'admLogin' && accion !== 'admTablero' && accion !== 'admFotos' && accion !== 'admFoto' && ses.perfil !== 'Operación') return err('Tu perfil es de consulta: no puede modificar el ruteo.');
+      switch (accion){
+        case 'admLogin': { const u = usuarios[d.usuario]; if (!u || d.pin !== '1234') return err('En demo: usuario OPERACION o VELEZ, PIN 1234'); return ok({ok: true, token: 'demo', nombre: u.nombre, perfil: u.perfil, ciudad: 'Todas', ciudades: ['Bogotá', 'Medellín']}); }
+        case 'admTablero': {
+          const fecha = d.fecha || hoyTxt(), ciudad = d.ciudad || 'Todas', op = ses.perfil === 'Operación';
+          const {ps, E} = demoEntrada(fecha, ciudad, false);
+          const R = motorRuteo_(E);
+          const pedidos = JSON.parse(JSON.stringify(ps)).map(p => { const r = R.pedidos[p.id]; if (r){ p.etaRcalc = hhmmMin_(r.etaR); p.etaEcalc = hhmmMin_(r.etaE); p.riesgo = r.riesgo; if (!p.zonaO) p.zonaO = r.zonaO; if (!p.zonaD) p.zonaD = r.zonaD; if (p.modalidad === 'Trueque' && !p.horaTrueque) p.horaTrueque = hhmmMin_(r.horaTrueque); } if (!op) delete p.telefono; return p; });
+          const rutas = {};
+          Object.keys(R.rutas).forEach(n => { const r = R.rutas[n]; rutas[n] = {ciudad: r.ciudad, inicio: op ? r.inicio : null, hora0: hhmmMin_(r.hora0), fin: hhmmMin_(r.fin), carga: r.carga, paradas: r.paradas.map(p => ({n: p.n, lat: p.lat, lng: p.lng, eta: hhmmMin_(p.eta), items: p.items}))}; });
+          const fc = (x) => ciudad === 'Todas' || x.ciudad === ciudad;
+          const m = fecha === hoyTxt() ? ahoraMin() : (fecha < hoyTxt() ? 1440 : -1);
+          const alertas = R.avisos.slice();
+          pedidos.forEach(p => {
+            if (!abiertoP(p)) return;
+            const hT = aMin(p.horaTrueque);
+            if (p.modalidad === 'Trueque' && hT != null && ['Pendiente', 'Aceptado', 'Recogido'].includes(p.estado) && m > hT + 20) alertas.push({tipo: 'truequeRiesgo', id: p.id, txt: 'Trueque atrasado: debía hacerse a las ' + p.horaTrueque + ' (' + p.A + ' → ' + p.B + ')'});
+            const h = aMin(p.hasta); if (h != null && m > h) alertas.push({tipo: 'vencido', id: p.id, txt: 'Vencido: hora límite ' + p.hasta});
+            if (op && p.A && !p.publicado) alertas.push({tipo: 'borrador', id: p.id, txt: 'Asignado sin publicar'});
+          });
+          return ok({ok: true, fecha, ciudad, perfil: ses.perfil, nombre: ses.nombre, pedidos, rutas, hora: new Date().toTimeString().slice(0, 5),
+            mensajeros: DB.mensajeros.filter(fc).map((x, k) => { const y = Object.assign({}, x); if (!op){ delete y.telefono; delete y.codigo; }
+              if (y.lat){ const t = new Date(Date.now() - [2, 7, 45, 12, 3][k % 5] * 60000); y.horaUbic = hoyTxt() + ' ' + t.toTimeString().slice(0, 5); } return y; }),
+            zonas: DB.zonas.filter(fc), puntos: DB.puntos.filter(fc), tiendas: DB.tiendas.filter(fc),
+            alertas: alertas.filter(a => op || !['borrador', 'mensajero', 'sinAsignar', 'sinMensajero', 'punto'].includes(a.tipo))});
+        }
+        case 'admGenerar': { const r = demoGenerar(d.fecha || hoyTxt(), d.ciudad || 'Todas'); return ok({ok: true, resumen: r.resumen, avisos: r.avisos}); }
+        case 'admPublicar': { let n = 0; const cerrar = {};
+          DB.pedidos.forEach(p => { if (p.fecha === d.fecha && (d.ciudad === 'Todas' || p.ciudad === d.ciudad)) delete p._resp;
+            if (p.fecha === d.fecha && (d.ciudad === 'Todas' || p.ciudad === d.ciudad) && p.A && abiertoP(p) && !p.publicado){ p.publicado = true; demoMarcarRuta(p); n++; }
+            if (p.fecha === d.fecha && p.publicado && p.ruta === demoAbierta(p)) cerrar[p.fecha + '|' + p.ciudad] = p.ruta + 1; });
+          if (n) Object.assign(DB.rutaAb = DB.rutaAb || {}, cerrar);
+          return ok({ok: true, publicados: n}); }
+        case 'admMover': {
+          const p = DB.pedidos.find(x => x.id === d.id); if (!p) return err('Pedido no encontrado');
+          const tq = d.B && d.B !== d.A;
+          if (['Recogido', 'Transferido', 'Recibido'].includes(p.estado) && d.A !== p.A) return err('El pedido ya fue recogido: no se puede cambiar quién lo recoge');
+          if (d.A !== p.A || tq) p.ordenManual = null;
+          Object.assign(p, {A: d.A, B: tq ? d.B : '', punto: tq ? d.punto : '', horaTrueque: tq ? d.horaTrueque || '' : '', modalidad: p.modalidad === 'Intermunicipal' ? 'Intermunicipal' : tq ? 'Trueque' : 'Directo', asignacion: d.A ? 'Manual' : '', motivoAsig: 'Ajuste manual · demo'});
+          demoMarcarRuta(p);
+          if (tq && !p.horaTrueque){ const {E} = demoEntrada(p.fecha, p.ciudad, false); const R = motorRuteo_(E); p.horaTrueque = hhmmMin_(R.pedidos[p.id].horaTrueque); }
+          return ok({ok: true});
+        }
+        case 'admRutaManual': {
+          const m = DB.mensajeros.find(x => x.nombre === d.A); if (!m) return err('Conductor no válido');
+          const omitidos = [], ok2 = [];
+          d.ids.forEach(id => { const p = DB.pedidos.find(x => x.id === id); if (!p) return omitidos.push(id + ': no existe');
+            if (m.ciudad !== p.ciudad) return omitidos.push(id + ': ' + d.A + ' trabaja en ' + m.ciudad);
+            if (!['Pendiente', 'Aceptado'].includes(p.estado) && !(p.estado === 'Recogido' && p.A === d.A && p.modalidad !== 'Trueque')) return omitidos.push(id + ': ya está ' + p.estado.toLowerCase());
+            ok2.push(p); });
+          if (!ok2.length) return err('Ningún pedido se pudo asignar: ' + omitidos.join(' · '));
+          DB.pedidos.forEach(p => { if (p.A === d.A && !ok2.includes(p)) p.ordenManual = null; });
+          ok2.forEach((p, k) => { const cambio = p.A !== d.A || p.modalidad === 'Trueque'; if (cambio && p.estado === 'Aceptado'){ p.estado = 'Pendiente'; p.hAceptado = ''; }
+            Object.assign(p, {A: d.A, B: '', punto: '', horaTrueque: '', modalidad: p.modalidad === 'Intermunicipal' ? 'Intermunicipal' : 'Directo', asignacion: 'Manual', motivoAsig: 'Ruta con lápiz · parada ' + (k + 1) + ' de ' + ok2.length, ordenManual: k + 1});
+            if (cambio) p.publicado = false; demoMarcarRuta(p); });
+          return ok({ok: true, asignados: ok2.length, omitidos});
+        }
+        case 'admUbicar': { const p = DB.pedidos.find(x => x.id === d.id); if (!p) return err('Pedido no encontrado'); p.lat = d.lat; p.lng = d.lng; delete p.sinUbic; return ok({ok: true, zona: ''}); }
+        case 'admPasarDirecto': { const p = DB.pedidos.find(x => x.id === d.id); if (['Transferido', 'Recibido'].includes(p.estado)) return err('Ya transferido'); Object.assign(p, {B: '', punto: '', horaTrueque: '', modalidad: 'Directo', asignacion: 'Manual', motivoAsig: 'Trueque cancelado · entrega directa'}); return ok({ok: true}); }
+        case 'admDescartar': { let a = 0, b = 0; DB.pedidos.forEach(p => { if (p.fecha !== d.fecha || (d.ciudad !== 'Todas' && p.ciudad !== d.ciudad) || p.publicado || p.estado !== 'Pendiente' || p.asignacion === 'Manual') return;
+            if (p._resp){ Object.assign(p, p._resp); delete p._resp; a++; } else if (p.A){ Object.assign(p, {A: '', B: '', punto: '', horaTrueque: '', modalidad: '', ruta: null, orden: null}); b++; } });
+          return ok({ok: true, restaurados: a, liberados: b}); }
+        case 'admCancelar': { const p = DB.pedidos.find(x => x.id === d.id); p.estado = 'Cancelado'; p.observacion = 'Cancelado: ' + (d.motivo || ''); p.hCierre = new Date().toTimeString().slice(0, 5); return ok({ok: true}); }
+        case 'admGuardarZona': { const z = d.zona; const i = DB.zonas.findIndex(x => x.nombre === (z.nombreAnterior || z.nombre) && x.ciudad === z.ciudad); const nueva = {nombre: z.nombre, ciudad: z.ciudad, mensajero: z.mensajero, color: z.color, poligono: z.poligono}; if (i >= 0) DB.zonas[i] = nueva; else DB.zonas.push(nueva); return ok({ok: true}); }
+        case 'admBorrarZona': DB.zonas = DB.zonas.filter(x => !(x.nombre === d.nombre && x.ciudad === d.ciudad)); return ok({ok: true});
+        case 'admGuardarPunto': { const q = d.punto; const i = DB.puntos.findIndex(x => x.nombre === (q.nombreAnterior || q.nombre) && x.ciudad === q.ciudad); const nuevo = {nombre: q.nombre, ciudad: q.ciudad, dir: q.dir, lat: q.lat, lng: q.lng, zonas: q.zonas, notas: q.notas}; if (i >= 0) DB.puntos[i] = nuevo; else DB.puntos.push(nuevo); return ok({ok: true}); }
+        case 'admBorrarPunto': DB.puntos = DB.puntos.filter(x => !(x.nombre === d.nombre && x.ciudad === d.ciudad)); return ok({ok: true});
+        case 'admFotos': { const p = DB.pedidos.find(x => x.id === d.id); const f = {R: [], T: [], B: [], E: []}; if (p && p.conFotos){ for (let i = 0; i < p.nFotos.R; i++) f.R.push(p.id + '_R_' + i); for (let i = 0; i < p.nFotos.T; i++) f.T.push(p.id + '_T_' + i); for (let i = 0; i < p.nFotos.E; i++) f.E.push(p.id + '_E_' + i); } return ok({ok: true, fotos: f}); }
+        case 'admFoto': {
+          const c = document.createElement('canvas'); c.width = 480; c.height = 360; const g = c.getContext('2d');
+          g.fillStyle = '#e9e7e1'; g.fillRect(0, 0, 480, 360); g.fillStyle = '#111'; g.font = 'bold 22px sans-serif'; g.fillText('Foto de ejemplo', 150, 170);
+          g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(0, 320, 480, 40); g.fillStyle = '#FFD200'; g.font = 'bold 15px sans-serif'; g.fillText(d.nombre, 12, 345);
+          return ok({ok: true, data: c.toDataURL('image/jpeg', .7)});
+        }
+      }
+      ok({ok: true});
+    } catch(e){ mal(e); }
+  }, 250));
+}
+
+iniciar();
+</script>
+</body>
+</html>
